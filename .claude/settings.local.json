@@ -1,0 +1,37 @@
+{
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(docker compose build:*)",
+      "Bash(docker compose run --rm app pytest:*)",
+      "Bash(docker compose run --rm app ruff:*)",
+      "Bash(docker compose run --rm app python:*)",
+      "Bash(docker compose run --rm app alembic:*)",
+      "Bash(docker compose up:*)",
+      "Bash(docker compose down:*)",
+      "Bash(docker compose ps:*)",
+      "Bash(docker compose exec -T app-db psql:*)",
+      "Bash(uv lock:*)",
+      "Bash(uv sync:*)",
+      "Bash(uv export:*)",
+      "Bash(python -m mlx_lm.*)",
+      "Bash(python -m mlx_vlm.*)",
+      "Bash(mlx_lm.server:*)",
+      "Bash(sysctl iogpu.wired_limit_mb=*)",
+      "Bash(ls:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git *)"
+    ],
+    "additionalDirectories": [
+      "/Users/danielcaso/projects/Vault Projects/G-Scan-RX"
+    ]
+  },
+  "outputStyle": "default",
+  "teammateMode": "tmux"
+}
