@@ -5,12 +5,14 @@ from typing import AsyncGenerator
 from fastapi import FastAPI, HTTPException, Request
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
+from src.application.agent.react_loop import ReActLoop
 from src.application.use_cases.extract_prescription import ExtractPrescriptionUseCase
 from src.application.use_cases.verify_medication import VerifyMedicationUseCase
-from src.application.agent.react_loop import ReActLoop
 from src.config import settings
-from src.interfaces.api.bootstrap import AppContainer, Bootstrap
+from src.domain.ports.guardrail import Guardrail
+from src.domain.ports.tracer import Tracer
 from src.infrastructure.persistence.catalog_repository import SqlAlchemyCatalogRepository
+from src.interfaces.api.bootstrap import AppContainer, Bootstrap
 
 logger = logging.getLogger(__name__)
 
@@ -65,3 +67,15 @@ def get_react_loop(request: Request) -> ReActLoop:
 
 def get_agent_graph(request: Request):
     return _container(request).agent_graph
+
+
+def get_pii_guardrail(request: Request) -> Guardrail:
+    return _container(request).pii_guardrail
+
+
+def get_injection_guardrail(request: Request) -> Guardrail:
+    return _container(request).injection_guardrail
+
+
+def get_tracer(request: Request) -> Tracer:
+    return _container(request).tracer

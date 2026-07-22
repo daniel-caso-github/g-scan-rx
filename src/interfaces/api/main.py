@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 
 from src.interfaces.api.dependencies import lifespan
+from src.interfaces.api.middleware import PrometheusMiddleware
 from src.interfaces.api.routers import agent, prescriptions
 
 app = FastAPI(
@@ -14,5 +15,6 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+app.add_middleware(PrometheusMiddleware)
 app.include_router(prescriptions.router)
 app.include_router(agent.router)
