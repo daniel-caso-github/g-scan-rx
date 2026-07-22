@@ -9,7 +9,7 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 try:
-    from src.infrastructure.config import settings
+    from src.config import settings
     from src.infrastructure.persistence.orm_models import Base
     config.set_main_option("sqlalchemy.url", settings.database_url)
     target_metadata = Base.metadata if Base else None

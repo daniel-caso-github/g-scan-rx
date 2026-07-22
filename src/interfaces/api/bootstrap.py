@@ -11,7 +11,9 @@ from src.application.use_cases.verify_medication import VerifyMedicationUseCase
 from src.config import settings
 from src.domain.entities.catalog_item import CatalogItem
 from src.domain.ports.guardrail import Guardrail
+from src.domain.ports.image_cache import ImageCache
 from src.domain.ports.tracer import Tracer
+from src.infrastructure.cache.memory_image_cache import MemoryImageCache
 from src.infrastructure.embedding.embedder import Embedder
 from src.infrastructure.guardrails.null_guardrail import NullGuardrail
 from src.infrastructure.mcp.server import build_mcp_server
@@ -38,6 +40,7 @@ class AppContainer:
         pii_guardrail: Guardrail,
         injection_guardrail: Guardrail,
         tracer: Tracer,
+        image_cache: ImageCache,
     ) -> None:
         self.extract_uc = extract_uc
         self.verify_uc = verify_uc
@@ -46,6 +49,7 @@ class AppContainer:
         self.pii_guardrail = pii_guardrail
         self.injection_guardrail = injection_guardrail
         self.tracer = tracer
+        self.image_cache = image_cache
 
 
 class Bootstrap:
@@ -92,6 +96,7 @@ class Bootstrap:
         pii_guardrail = self._build_pii_guardrail()
         injection_guardrail = self._build_injection_guardrail()
         tracer = self._build_tracer()
+        image_cache = MemoryImageCache(maxsize=settings.cache_maxsize)
 
         return AppContainer(
             extract_uc=extract_uc,
@@ -101,6 +106,7 @@ class Bootstrap:
             pii_guardrail=pii_guardrail,
             injection_guardrail=injection_guardrail,
             tracer=tracer,
+            image_cache=image_cache,
         )
 
     @staticmethod
