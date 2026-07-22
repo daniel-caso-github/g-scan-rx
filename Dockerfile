@@ -11,13 +11,16 @@ WORKDIR /app
 
 FROM base AS deps
 COPY pyproject.toml ./
-RUN uv sync --no-dev --extra catalog --extra vision --extra retrieval \
+RUN uv sync --extra dev --extra catalog --extra vision --extra retrieval \
     --extra agent --extra guardrails --extra observability --extra api
 
 FROM base AS final
 COPY --from=deps /app/.venv /app/.venv
 ENV PATH="/app/.venv/bin:$PATH"
 
+COPY pyproject.toml ./
+COPY alembic.ini ./
+COPY alembic/ ./alembic/
 COPY src/ ./src/
 COPY scripts/ ./scripts/
 
