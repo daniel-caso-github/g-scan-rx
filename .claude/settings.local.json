@@ -26,7 +26,11 @@
       "Bash(git log:*)",
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
-      "Bash(git *)"
+      "Bash(git *)",
+      "Bash(python -m pytest tests/ -x -q)",
+      "Bash(pip show *)",
+      "Bash(pip install *)",
+      "Bash(python -m pytest tests/ -q)"
     ],
     "additionalDirectories": [
       "/Users/danielcaso/projects/Vault Projects/G-Scan-RX"

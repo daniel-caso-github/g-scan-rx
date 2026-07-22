@@ -892,6 +892,7 @@ name = "g-scan-rx"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "httpx" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "python-dotenv" },
@@ -949,6 +950,7 @@ requires-dist = [
     { name = "anthropic", marker = "extra == 'vision'", specifier = ">=0.40" },
     { name = "fastapi", marker = "extra == 'api'", specifier = ">=0.115" },
     { name = "fastmcp", marker = "extra == 'agent'", specifier = ">=2.0" },
+    { name = "httpx", specifier = ">=0.27" },
     { name = "langchain-core", marker = "extra == 'agent'", specifier = ">=0.3" },
     { name = "langfuse", marker = "extra == 'observability'", specifier = ">=2.0" },
     { name = "langgraph", marker = "extra == 'agent'", specifier = ">=0.2" },
