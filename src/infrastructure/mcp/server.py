@@ -22,11 +22,11 @@ def build_mcp_server(
 
     @mcp.tool()
     async def vision_extract(image_b64: str, image_hash: str) -> dict:
-        """Extrae medicamentos de una imagen de receta médica.
+        """Extract medications from a handwritten prescription image.
 
-        Devuelve una Prescription serializada con campos por medicamento
-        (drug, dose, frequency, duration, route) y sus niveles de confianza.
-        Campos ilegibles aparecen con status='unreadable' y value=null.
+        Returns a serialized Prescription with per-medication fields
+        (drug, dose, frequency, duration, route) and their confidence levels.
+        Unreadable fields appear with status='unreadable' and value=null.
         """
         image_bytes = base64.b64decode(image_b64)
         prescription = await extract_uc.execute(image_bytes, image_hash)
@@ -34,10 +34,10 @@ def build_mcp_server(
 
     @mcp.tool()
     async def retrieve_drug(query: str, top_k: int = 5) -> list[dict]:
-        """Recupera candidatos del catálogo oficial para un nombre de fármaco.
+        """Retrieve candidates from the official catalog for a drug name.
 
-        Usa retrieval híbrido (BM25 + vector + reranker).
-        Devuelve lista de {item, score} ordenada por relevancia descendente.
+        Uses hybrid retrieval (BM25 + vector + reranker).
+        Returns a list of {item, score} sorted by descending relevance.
         """
         results = await retriever.retrieve(query, top_k=top_k)
         return [
@@ -47,10 +47,10 @@ def build_mcp_server(
 
     @mcp.tool()
     async def verify_prescription(prescription_data: dict) -> dict:
-        """Verifica cada medicamento de una Prescription contra el catálogo.
+        """Verify each medication in a Prescription against the official catalog.
 
-        Devuelve un VerifiedRecord con veredicto por campo (verified/uncertain/not_found)
-        y un flag needs_review que indica si se requiere confirmación humana.
+        Returns a VerifiedRecord with a per-field verdict (verified/uncertain/not_found)
+        and a needs_review flag indicating whether human confirmation is required.
         """
         prescription = Prescription.model_validate(prescription_data)
         record = await verify_uc.execute(prescription)
@@ -59,10 +59,10 @@ def build_mcp_server(
     if anomaly_detector is not None:
         @mcp.tool()
         async def detect_anomaly(image_b64: str) -> dict:
-            """Detecta si la imagen no es una receta médica (fuera de distribución).
+            """Detect whether the image is not a medical prescription (out-of-distribution).
 
-            Devuelve {score, is_anomaly}. Score alto indica imagen OOD.
-            Si is_anomaly es true, el agente debe abstenerse de procesar.
+            Returns {score, is_anomaly}. High score indicates OOD image.
+            If is_anomaly is true, the agent must abstain from processing.
             """
             image_bytes = base64.b64decode(image_b64)
             score = await anomaly_detector.score(image_bytes)

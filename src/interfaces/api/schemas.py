@@ -1,4 +1,26 @@
+from typing import Generic, TypeVar
+
 from pydantic import BaseModel
+
+T = TypeVar("T")
+
+
+class ApiError(BaseModel):
+    code: str
+    message: str
+
+
+class ApiResponse(BaseModel, Generic[T]):
+    data: T | None = None
+    error: ApiError | None = None
+
+    @classmethod
+    def ok(cls, data: T) -> "ApiResponse[T]":
+        return cls(data=data, error=None)
+
+    @classmethod
+    def fail(cls, code: str, message: str) -> "ApiResponse[T]":
+        return cls(data=None, error=ApiError(code=code, message=message))
 
 
 class HealthResponse(BaseModel):

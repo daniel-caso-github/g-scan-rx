@@ -3,7 +3,7 @@ import hashlib
 import sys
 from pathlib import Path
 
-from src.interfaces.api.dependencies import build_extract_uc
+from src.interfaces.api.bootstrap import build_extract_uc_standalone as build_extract_uc
 
 
 def _hash(data: bytes) -> str:

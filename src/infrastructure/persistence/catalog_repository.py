@@ -1,44 +1,25 @@
 from __future__ import annotations
 
-from typing import Any
-
 from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.domain.entities.catalog_item import CatalogItem
 from src.domain.ports.catalog_repository import CatalogRepository
+from src.infrastructure.persistence.mapper import domain_to_orm_values, orm_to_domain
 from src.infrastructure.persistence.orm_models import CatalogItemORM
 
 
 class SqlAlchemyCatalogRepository(CatalogRepository):
-    def __init__(self, session: Any) -> None:
+    def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
     async def upsert(self, item: CatalogItem) -> None:
-        stmt = insert(CatalogItemORM).values(
-            id=item.id,
-            active_ingredient=item.active_ingredient,
-            brand_name=item.brand_name,
-            presentation=item.presentation,
-            concentration=item.concentration,
-            form=item.form,
-            dose_range=item.dose_range,
-            source=item.source,
-            country=item.country,
-            embedding=item.embedding,
-        ).on_conflict_do_update(
-            index_elements=["id"],
-            set_=dict(
-                active_ingredient=item.active_ingredient,
-                brand_name=item.brand_name,
-                presentation=item.presentation,
-                concentration=item.concentration,
-                form=item.form,
-                dose_range=item.dose_range,
-                source=item.source,
-                country=item.country,
-                embedding=item.embedding,
-            ),
+        values = domain_to_orm_values(item)
+        stmt = (
+            insert(CatalogItemORM)
+            .values(**values)
+            .on_conflict_do_update(index_elements=["id"], set_=values)
         )
         await self._session.execute(stmt)
         await self._session.commit()
@@ -47,9 +28,7 @@ class SqlAlchemyCatalogRepository(CatalogRepository):
         stmt = select(CatalogItemORM).where(CatalogItemORM.id == item_id)
         result = await self._session.execute(stmt)
         orm = result.scalar_one_or_none()
-        if orm is None:
-            return None
-        return self._to_domain(orm)
+        return orm_to_domain(orm) if orm is not None else None
 
     async def count(self) -> int:
         stmt = select(func.count()).select_from(CatalogItemORM)
@@ -59,18 +38,4 @@ class SqlAlchemyCatalogRepository(CatalogRepository):
     async def list_all(self) -> list[CatalogItem]:
         stmt = select(CatalogItemORM)
         result = await self._session.execute(stmt)
-        return [self._to_domain(row) for row in result.scalars().all()]
-
-    def _to_domain(self, orm: Any) -> CatalogItem:
-        return CatalogItem(
-            id=orm.id,
-            active_ingredient=orm.active_ingredient,
-            brand_name=orm.brand_name,
-            presentation=orm.presentation,
-            concentration=orm.concentration,
-            form=orm.form,
-            dose_range=orm.dose_range,
-            source=orm.source,
-            country=orm.country,
-            embedding=list(orm.embedding) if orm.embedding is not None else None,
-        )
+        return [orm_to_domain(row) for row in result.scalars().all()]

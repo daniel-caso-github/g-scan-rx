@@ -13,7 +13,7 @@ AsyncTool = Callable[..., Awaitable[Any]]
 
 
 class AgentAbstainError(Exception):
-    """El agente se abstiene porque la imagen fue identificada como fuera de distribución."""
+    """Agent abstains because the image was identified as out-of-distribution."""
 
 
 class _Action(StrEnum):
@@ -40,10 +40,10 @@ class _State(BaseModel):
 
 
 class ReActLoop:
-    """Ciclo Reason-Act-Observe puro en Python para procesar una receta.
+    """Pure Python Reason-Act-Observe loop for processing a prescription.
 
-    Dependencias inyectadas como callables async; no importa de infrastructure.
-    La versión LangGraph (Step 4) reutilizará estas mismas tools via graph.py.
+    Tools injected as async callables; no infrastructure imports.
+    The LangGraph version (Step 4) reuses these same tools via graph.py.
     """
 
     def __init__(

@@ -2,9 +2,9 @@ import hashlib
 
 
 def make_id(*parts: str) -> str:
-    """ID determinista a partir de uno o más strings.
+    """Deterministic ID from one or more strings.
 
-    Idempotente: mismos inputs → mismo ID. Usado para entidades y catálogo.
+    Idempotent: same inputs → same ID. Used for entities and catalog items.
     """
     combined = "|".join(parts)
     return hashlib.sha256(combined.encode()).hexdigest()[:24]
