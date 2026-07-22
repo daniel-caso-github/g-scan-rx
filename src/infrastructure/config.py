@@ -9,6 +9,11 @@ class Settings(BaseSettings):
     langfuse_secret_key: str = ""
     langfuse_host: str = "https://cloud.langfuse.com"
     confidence_threshold: float = 0.7
+    normalizer_url: str = "http://localhost:8080/v1"
+    normalizer_model: str = "gscan-norm-v1"
+    vision_model: str = "claude-opus-4-8"
+    vision_confidence_readable: float = 0.7
+    vision_confidence_uncertain: float = 0.3
 
     model_config = SettingsConfigDict(env_file="app.env", env_file_encoding="utf-8")
 
