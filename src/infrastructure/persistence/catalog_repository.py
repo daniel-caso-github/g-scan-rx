@@ -1,8 +1,13 @@
 from __future__ import annotations
+
 from typing import Any
+
+from sqlalchemy import func, select
+from sqlalchemy.dialects.postgresql import insert
 
 from src.domain.entities.catalog_item import CatalogItem
 from src.domain.ports.catalog_repository import CatalogRepository
+from src.infrastructure.persistence.orm_models import CatalogItemORM
 
 
 class SqlAlchemyCatalogRepository(CatalogRepository):
@@ -10,9 +15,6 @@ class SqlAlchemyCatalogRepository(CatalogRepository):
         self._session = session
 
     async def upsert(self, item: CatalogItem) -> None:
-        from sqlalchemy.dialects.postgresql import insert
-        from src.infrastructure.persistence.orm_models import CatalogItemORM
-
         stmt = insert(CatalogItemORM).values(
             id=item.id,
             active_ingredient=item.active_ingredient,
@@ -42,9 +44,6 @@ class SqlAlchemyCatalogRepository(CatalogRepository):
         await self._session.commit()
 
     async def get_by_id(self, item_id: str) -> CatalogItem | None:
-        from sqlalchemy import select
-        from src.infrastructure.persistence.orm_models import CatalogItemORM
-
         stmt = select(CatalogItemORM).where(CatalogItemORM.id == item_id)
         result = await self._session.execute(stmt)
         orm = result.scalar_one_or_none()
@@ -53,12 +52,14 @@ class SqlAlchemyCatalogRepository(CatalogRepository):
         return self._to_domain(orm)
 
     async def count(self) -> int:
-        from sqlalchemy import func, select
-        from src.infrastructure.persistence.orm_models import CatalogItemORM
-
         stmt = select(func.count()).select_from(CatalogItemORM)
         result = await self._session.execute(stmt)
         return result.scalar_one()
+
+    async def list_all(self) -> list[CatalogItem]:
+        stmt = select(CatalogItemORM)
+        result = await self._session.execute(stmt)
+        return [self._to_domain(row) for row in result.scalars().all()]
 
     def _to_domain(self, orm: Any) -> CatalogItem:
         return CatalogItem(

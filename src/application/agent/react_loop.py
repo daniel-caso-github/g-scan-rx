@@ -1,8 +1,9 @@
 import base64
 import logging
-from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Any, Callable, Awaitable
+
+from pydantic import BaseModel, Field
 
 from src.domain.entities.verified_record import VerifiedRecord
 
@@ -23,17 +24,15 @@ class _Action(StrEnum):
     ABSTAIN = "abstain"
 
 
-@dataclass
-class AgentStep:
+class AgentStep(BaseModel):
     action: str
     observation: dict
 
 
-@dataclass
-class _State:
+class _State(BaseModel):
     image_b64: str
     image_hash: str
-    steps: list[AgentStep] = field(default_factory=list)
+    steps: list[AgentStep] = Field(default_factory=list)
     prescription_data: dict | None = None
     record_data: dict | None = None
     anomaly_checked: bool = False
