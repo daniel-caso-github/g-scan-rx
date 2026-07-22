@@ -116,7 +116,9 @@ class Bootstrap:
             from src.infrastructure.guardrails.pii_guardrail import PiiGuardrail
             return PiiGuardrail()
         except Exception:
-            logger.warning("presidio no disponible — PiiGuardrail desactivado")
+            # Fail-open: log at ERROR so ops notices the degradation immediately.
+            # presidio requires spacy models; missing model is a misconfiguration, not a transient error.
+            logger.error("presidio no disponible — PiiGuardrail DESACTIVADO; todo texto pasará sin inspección PII")
             return NullGuardrail()
 
     @staticmethod
@@ -125,7 +127,8 @@ class Bootstrap:
             from src.infrastructure.guardrails.injection_guardrail import InjectionGuardrail
             return InjectionGuardrail()
         except Exception:
-            logger.warning("llm-guard no disponible — InjectionGuardrail desactivado")
+            # Fail-open: log at ERROR so ops notices the degradation immediately.
+            logger.error("llm-guard no disponible — InjectionGuardrail DESACTIVADO; prompt injection no será detectado")
             return NullGuardrail()
 
     @staticmethod
