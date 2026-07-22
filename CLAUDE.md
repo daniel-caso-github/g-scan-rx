@@ -12,10 +12,9 @@ estructurada para **confirmación humana** campo por campo junto al recorte de l
 Tesis de ingeniería: *¿cómo se ingenieriza un sistema con LLMs cuando equivocarse tiene
 consecuencias reales?* El eje no es leer letra de médico — es **saber cuándo el sistema no sabe**.
 
-> ⚠️ **Estado actual: el proyecto NO tiene código todavía.** Este `.claude/` y la LLM Wiki
-> documentan el **diseño planeado**. Antes de programar cualquier cosa, entrar por la wiki
-> (`wiki/phases/phases-index.md`) y respetar las reglas `approved`. Las skills/agents describen el
-> flujo que tendrá el repo; algunas asumen estructura (`src/…`, Docker, MLX) que aún hay que crear.
+> ⚠️ **Estado actual: Fases 1 y 2 implementadas.** Domain, eval harness, catálogo (CIMA + pgvector),
+> retrieval híbrido y 61 tests passing. Antes de continuar, entrar por la wiki
+> (`wiki/phases/phases-index.md`) y respetar las reglas `approved`.
 
 ## Arquitectura de código: Clean Architecture
 
@@ -25,27 +24,27 @@ infrastructure → application → domain). Domain no importa de nadie. (Heredad
 ```
 src/
 ├── domain/                        # pura — sin frameworks externos (excepto Pydantic)
-│   ├── entities/                  # Receta, MedicamentoExtraido, FichaVerificada, ItemCatalogo
-│   ├── value_objects/             # CampoExtraido, DosisNormalizada, VeredictoVerificacion, RecorteImagen
-│   ├── services/                  # make_id, normalización de dosis (funciones puras)
+│   ├── entities/                  # Prescription, ExtractedMedication, VerifiedRecord, CatalogItem
+│   ├── value_objects/             # ExtractedField, NormalizedDose, VerificationVerdict, ImageCrop
+│   ├── services/                  # make_id, dose normalization (pure functions)
 │   └── ports/                     # ABC: VisionExtractor, Normalizer, CatalogRepository, Retriever,
 │                                  #   Verifier, AnomalyDetector
 ├── application/
 │   ├── use_cases/                 # IngestCatalog, ExtractPrescription, VerifyMedication, ScorePrescription
-│   └── agent/                     # bucle ReAct → LangGraph (núcleo agéntico)
+│   └── agent/                     # ReAct loop → LangGraph (agentic core)
 ├── infrastructure/                # implementa los ports del domain
-│   ├── config.py                  # Settings (lee env)
-│   ├── vision/                    # VLM nube (visión documental)
-│   ├── normalizer/                # normalizador MLX local (texto → JSON canónico)
-│   ├── catalog/                   # CIMA / DIGEMID → ItemCatalogo
-│   ├── retrieval/                 # híbrido BM25 + vectorial + reranker
+│   ├── config.py                  # Settings (reads env)
+│   ├── vision/                    # cloud VLM (document vision)
+│   ├── normalizer/                # local MLX normalizer (text → canonical JSON)
+│   ├── catalog/                   # CIMA / DIGEMID → CatalogItem
+│   ├── retrieval/                 # hybrid BM25 + vector + reranker
 │   ├── embedding/                 # sentence-transformers (BGE-M3 / e5)
-│   ├── mcp/                       # tools del agente vía MCP (fastmcp)
-│   ├── guardrails/                # presidio (PII) + llm-guard (inyección) + OOD
+│   ├── mcp/                       # agent tools via MCP (fastmcp)
+│   ├── guardrails/                # presidio (PII) + llm-guard (injection) + OOD
 │   ├── observability/             # langfuse + prometheus + otel
-│   └── persistence/               # SQLAlchemy: catálogo en Postgres + pgvector
+│   └── persistence/               # SQLAlchemy: catalog in Postgres + pgvector
 └── interfaces/                    # entrypoints
-    ├── api/                       # FastAPI: gateway + endpoints de verificación
+    ├── api/                       # FastAPI: gateway + verification endpoints
     └── cli/                       # ingest-catalog, extract, eval, finetune (entrypoints)
 ```
 
@@ -161,7 +160,7 @@ el código. Las reglas que crean nacen `draft`. Los `rule-implementer` no tocan 
 - **Idempotencia**: IDs vía `make_id`; ingesta del catálogo vía `pg_insert.on_conflict_do_update`.
 - **Retries `tenacity`** en todo cliente HTTP/LLM/VLM externo (429, 5xx, timeouts).
 - **Contrato de fallo**: los adaptadores de modelo **nunca levantan** hacia el pipeline; degradan a
-  `dudoso`/abstención para que la ficha caiga a confirmación humana en vez de romper.
+  `uncertain`/abstención para que la ficha caiga a confirmación humana en vez de romper.
 - **Tests offline-first**: fixtures sintéticas en `tests/fixtures/`, mocks de VLM/LLM/HTTP. Sin red.
 - **Sin SQL en duro**: persistencia vía `select()`/`pg_insert()`; schema por Alembic.
 - **Idioma**: identificadores en inglés; logs y mensajes al usuario en español.

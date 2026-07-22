@@ -1,12 +1,12 @@
 from abc import ABC, abstractmethod
 
-from src.domain.entities.medicamento_extraido import MedicamentoExtraido
+from src.domain.entities.extracted_medication import ExtractedMedication
 
 
 class VisionExtractor(ABC):
-    """Port: extrae medicamentos de una imagen de receta usando un VLM."""
+    """Port: extracts medications from a prescription image using a VLM."""
 
     @abstractmethod
-    async def extract(self, image_bytes: bytes) -> list[MedicamentoExtraido]:
-        """Segmenta la receta y extrae líneas de medicamentos con confianza por campo."""
+    async def extract(self, image_bytes: bytes) -> list[ExtractedMedication]:
+        """Segments the prescription and extracts medication lines with per-field confidence."""
         ...

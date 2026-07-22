@@ -1,18 +1,14 @@
-from src.domain.entities.ficha_verificada import (
-    CampoVerificado,
-    FichaVerificada,
-    MedicamentoVerificado,
-)
-from src.domain.entities.item_catalogo import ItemCatalogo
-from src.domain.entities.medicamento_extraido import MedicamentoExtraido
-from src.domain.entities.receta import EstadoReceta, Receta
+from src.domain.entities.catalog_item import CatalogItem
+from src.domain.entities.extracted_medication import ExtractedMedication
+from src.domain.entities.prescription import Prescription, PrescriptionStatus
+from src.domain.entities.verified_record import VerifiedField, VerifiedMedication, VerifiedRecord
 
 __all__ = [
-    "CampoVerificado",
-    "EstadoReceta",
-    "FichaVerificada",
-    "ItemCatalogo",
-    "MedicamentoExtraido",
-    "MedicamentoVerificado",
-    "Receta",
+    "CatalogItem",
+    "ExtractedMedication",
+    "Prescription",
+    "PrescriptionStatus",
+    "VerifiedField",
+    "VerifiedMedication",
+    "VerifiedRecord",
 ]

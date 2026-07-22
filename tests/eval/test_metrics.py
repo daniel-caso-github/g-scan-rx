@@ -1,133 +1,133 @@
-"""Tests de regresión del harness de evaluación.
+"""Regression tests for the evaluation harness.
 
-Verifican que las métricas se calculan correctamente y que los invariantes
-de abstención se mantienen. En CI, una subida de hallucination_rate sobre
-el umbral baseline hace fallar el test.
+Verify that metrics are calculated correctly and that abstention invariants
+are maintained. In CI, a hallucination_rate above the baseline threshold
+fails the test.
 """
 
 import pytest
 
-from src.domain.value_objects.campo_extraido import EstadoCampo
-from src.eval.harness import assert_sin_regresion, evaluar
-from src.eval.metrics import CAMPOS_EVALUADOS, calcular_metricas
+from src.domain.value_objects.extracted_field import FieldStatus
+from src.eval.harness import assert_no_regression, evaluate
+from src.eval.metrics import EVALUATED_FIELDS, calculate_metrics
 
 
-def _pred(receta_id: str, **campos) -> dict:
-    """Helper: construye una predicción serializada."""
-    resultado = {"receta_id": receta_id}
-    for campo in CAMPOS_EVALUADOS:
-        valor = campos.get(campo)
-        if valor is None:
-            resultado[campo] = {"status": EstadoCampo.ilegible, "value": None}
-        elif valor == "__dudoso__":
-            resultado[campo] = {"status": EstadoCampo.dudoso, "value": None}
+def _pred(prescription_id: str, **fields) -> dict:
+    """Helper: builds a serialized prediction."""
+    result = {"prescription_id": prescription_id}
+    for f in EVALUATED_FIELDS:
+        value = fields.get(f)
+        if value is None:
+            result[f] = {"status": FieldStatus.unreadable, "value": None}
+        elif value == "__uncertain__":
+            result[f] = {"status": FieldStatus.uncertain, "value": None}
         else:
-            resultado[campo] = {"status": EstadoCampo.legible, "value": valor}
-    return resultado
+            result[f] = {"status": FieldStatus.readable, "value": value}
+    return result
 
 
-def _gt(receta_id: str, **campos) -> dict:
-    return {"receta_id": receta_id, **campos}
+def _gt(prescription_id: str, **fields) -> dict:
+    return {"prescription_id": prescription_id, **fields}
 
 
-class TestCalcularMetricas:
-    def test_todo_correcto(self):
-        preds = [_pred("r1", farmaco="amoxicilina", dosis="500 mg",
-                        frecuencia="cada 8 horas", duracion="7 días", via="oral")]
-        gt = [_gt("r1", farmaco="amoxicilina", dosis="500 mg",
-                   frecuencia="cada 8 horas", duracion="7 días", via="oral")]
-        resultado = calcular_metricas(preds, gt)
-        for campo in CAMPOS_EVALUADOS:
-            m = resultado.metricas_por_campo[campo]
+class TestCalculateMetrics:
+    def test_all_correct(self):
+        preds = [_pred("p1", drug="amoxicilina", dose="500 mg",
+                        frequency="cada 8 horas", duration="7 días", route="oral")]
+        gt = [_gt("p1", drug="amoxicilina", dose="500 mg",
+                   frequency="cada 8 horas", duration="7 días", route="oral")]
+        result = calculate_metrics(preds, gt)
+        for f in EVALUATED_FIELDS:
+            m = result.metrics_by_field[f]
             assert m.exact_match == 1.0
             assert m.hallucination_rate == 0.0
 
-    def test_abstenciones_no_cuentan_como_alucinacion(self):
-        preds = [_pred("r1", farmaco=None, dosis="500 mg",
-                        frecuencia="cada 8 horas", duracion="7 días", via="oral")]
-        gt = [_gt("r1", farmaco="amoxicilina", dosis="500 mg",
-                   frecuencia="cada 8 horas", duracion="7 días", via="oral")]
-        resultado = calcular_metricas(preds, gt)
-        farmaco_m = resultado.metricas_por_campo["farmaco"]
-        assert farmaco_m.abstraidos == 1
-        assert farmaco_m.alucinaciones == 0
-        assert farmaco_m.hallucination_rate == 0.0
+    def test_abstentions_not_counted_as_hallucination(self):
+        preds = [_pred("p1", drug=None, dose="500 mg",
+                        frequency="cada 8 horas", duration="7 días", route="oral")]
+        gt = [_gt("p1", drug="amoxicilina", dose="500 mg",
+                   frequency="cada 8 horas", duration="7 días", route="oral")]
+        result = calculate_metrics(preds, gt)
+        drug_m = result.metrics_by_field["drug"]
+        assert drug_m.abstained == 1
+        assert drug_m.hallucinations == 0
+        assert drug_m.hallucination_rate == 0.0
 
-    def test_valor_incorrecto_cuenta_como_alucinacion(self):
-        preds = [_pred("r1", farmaco="ibuprofeno", dosis="500 mg",
-                        frecuencia="cada 8 horas", duracion="7 días", via="oral")]
-        gt = [_gt("r1", farmaco="amoxicilina", dosis="500 mg",
-                   frecuencia="cada 8 horas", duracion="7 días", via="oral")]
-        resultado = calcular_metricas(preds, gt)
-        farmaco_m = resultado.metricas_por_campo["farmaco"]
-        assert farmaco_m.alucinaciones == 1
-        assert farmaco_m.hallucination_rate == 1.0
+    def test_incorrect_value_counted_as_hallucination(self):
+        preds = [_pred("p1", drug="ibuprofeno", dose="500 mg",
+                        frequency="cada 8 horas", duration="7 días", route="oral")]
+        gt = [_gt("p1", drug="amoxicilina", dose="500 mg",
+                   frequency="cada 8 horas", duration="7 días", route="oral")]
+        result = calculate_metrics(preds, gt)
+        drug_m = result.metrics_by_field["drug"]
+        assert drug_m.hallucinations == 1
+        assert drug_m.hallucination_rate == 1.0
 
-    def test_multiple_recetas(self):
+    def test_multiple_prescriptions(self):
         preds = [
-            _pred("r1", farmaco="amoxicilina", dosis="500 mg",
-                   frecuencia="cada 8 horas", duracion="7 días", via="oral"),
-            _pred("r2", farmaco="ibuprofeno", dosis="400 mg",
-                   frecuencia="cada 12 horas", duracion="5 días", via="oral"),
+            _pred("p1", drug="amoxicilina", dose="500 mg",
+                   frequency="cada 8 horas", duration="7 días", route="oral"),
+            _pred("p2", drug="ibuprofeno", dose="400 mg",
+                   frequency="cada 12 horas", duration="5 días", route="oral"),
         ]
         gt = [
-            _gt("r1", farmaco="amoxicilina", dosis="500 mg",
-                 frecuencia="cada 8 horas", duracion="7 días", via="oral"),
-            _gt("r2", farmaco="ibuprofeno", dosis="400 mg",
-                 frecuencia="cada 12 horas", duracion="5 días", via="oral"),
+            _gt("p1", drug="amoxicilina", dose="500 mg",
+                 frequency="cada 8 horas", duration="7 días", route="oral"),
+            _gt("p2", drug="ibuprofeno", dose="400 mg",
+                 frequency="cada 12 horas", duration="5 días", route="oral"),
         ]
-        resultado = calcular_metricas(preds, gt)
-        for campo in CAMPOS_EVALUADOS:
-            m = resultado.metricas_por_campo[campo]
+        result = calculate_metrics(preds, gt)
+        for f in EVALUATED_FIELDS:
+            m = result.metrics_by_field[f]
             assert m.total == 2
-            assert m.exactos == 2
+            assert m.exact == 2
 
-    def test_dudoso_cuenta_como_abstencion(self):
-        preds = [_pred("r1", farmaco="__dudoso__", dosis="500 mg",
-                        frecuencia="cada 8 horas", duracion="7 días", via="oral")]
-        gt = [_gt("r1", farmaco="amoxicilina", dosis="500 mg",
-                   frecuencia="cada 8 horas", duracion="7 días", via="oral")]
-        resultado = calcular_metricas(preds, gt)
-        farmaco_m = resultado.metricas_por_campo["farmaco"]
-        assert farmaco_m.abstraidos == 1
-        assert farmaco_m.alucinaciones == 0
+    def test_uncertain_counted_as_abstention(self):
+        preds = [_pred("p1", drug="__uncertain__", dose="500 mg",
+                        frequency="cada 8 horas", duration="7 días", route="oral")]
+        gt = [_gt("p1", drug="amoxicilina", dose="500 mg",
+                   frequency="cada 8 horas", duration="7 días", route="oral")]
+        result = calculate_metrics(preds, gt)
+        drug_m = result.metrics_by_field["drug"]
+        assert drug_m.abstained == 1
+        assert drug_m.hallucinations == 0
 
-    def test_hallucination_rate_total(self):
-        preds = [_pred("r1", farmaco="ibuprofeno", dosis="500 mg",
-                        frecuencia="cada 8 horas", duracion="7 días", via="oral")]
-        gt = [_gt("r1", farmaco="amoxicilina", dosis="500 mg",
-                   frecuencia="cada 8 horas", duracion="7 días", via="oral")]
-        resultado = calcular_metricas(preds, gt)
-        hr = resultado.hallucination_rate_total()
+    def test_total_hallucination_rate(self):
+        preds = [_pred("p1", drug="ibuprofeno", dose="500 mg",
+                        frequency="cada 8 horas", duration="7 días", route="oral")]
+        gt = [_gt("p1", drug="amoxicilina", dose="500 mg",
+                   frequency="cada 8 horas", duration="7 días", route="oral")]
+        result = calculate_metrics(preds, gt)
+        hr = result.total_hallucination_rate()
         assert hr > 0.0
 
 
-class TestAssertSinRegresion:
-    def test_pasa_bajo_umbral(self):
-        preds = [_pred("r1", farmaco="amoxicilina", dosis="500 mg",
-                        frecuencia="cada 8 horas", duracion="7 días", via="oral")]
-        gt = [_gt("r1", farmaco="amoxicilina", dosis="500 mg",
-                   frecuencia="cada 8 horas", duracion="7 días", via="oral")]
-        resultado = evaluar(preds, gt)
-        assert_sin_regresion(resultado, {"hallucination_rate_max": 0.05})
+class TestAssertNoRegression:
+    def test_passes_below_threshold(self):
+        preds = [_pred("p1", drug="amoxicilina", dose="500 mg",
+                        frequency="cada 8 horas", duration="7 días", route="oral")]
+        gt = [_gt("p1", drug="amoxicilina", dose="500 mg",
+                   frequency="cada 8 horas", duration="7 días", route="oral")]
+        result = evaluate(preds, gt)
+        assert_no_regression(result, {"hallucination_rate_max": 0.05})
 
-    def test_falla_sobre_umbral(self):
-        preds = [_pred("r1", farmaco="ibuprofeno", dosis="500 mg",
-                        frecuencia="cada 8 horas", duracion="7 días", via="oral")]
-        gt = [_gt("r1", farmaco="amoxicilina", dosis="500 mg",
-                   frecuencia="cada 8 horas", duracion="7 días", via="oral")]
-        resultado = evaluar(preds, gt)
+    def test_fails_above_threshold(self):
+        preds = [_pred("p1", drug="ibuprofeno", dose="500 mg",
+                        frequency="cada 8 horas", duration="7 días", route="oral")]
+        gt = [_gt("p1", drug="amoxicilina", dose="500 mg",
+                   frequency="cada 8 horas", duration="7 días", route="oral")]
+        result = evaluate(preds, gt)
         with pytest.raises(AssertionError, match="Regresión detectada"):
-            assert_sin_regresion(resultado, {"hallucination_rate_max": 0.05})
+            assert_no_regression(result, {"hallucination_rate_max": 0.05})
 
-    def test_falla_por_exact_match_bajo(self):
-        preds = [_pred("r1", farmaco="ibuprofeno", dosis="500 mg",
-                        frecuencia="cada 8 horas", duracion="7 días", via="oral")]
-        gt = [_gt("r1", farmaco="amoxicilina", dosis="500 mg",
-                   frecuencia="cada 8 horas", duracion="7 días", via="oral")]
-        resultado = evaluar(preds, gt)
-        with pytest.raises(AssertionError, match="Regresión en campo 'farmaco'"):
-            assert_sin_regresion(
-                resultado,
-                {"hallucination_rate_max": 1.0, "por_campo": {"farmaco": {"exact_match_min": 0.9}}},
+    def test_fails_due_to_low_exact_match(self):
+        preds = [_pred("p1", drug="ibuprofeno", dose="500 mg",
+                        frequency="cada 8 horas", duration="7 días", route="oral")]
+        gt = [_gt("p1", drug="amoxicilina", dose="500 mg",
+                   frequency="cada 8 horas", duration="7 días", route="oral")]
+        result = evaluate(preds, gt)
+        with pytest.raises(AssertionError, match="Regresión en campo 'drug'"):
+            assert_no_regression(
+                result,
+                {"hallucination_rate_max": 1.0, "by_field": {"drug": {"exact_match_min": 0.9}}},
             )

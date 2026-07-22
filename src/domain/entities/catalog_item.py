@@ -1,11 +1,11 @@
 from pydantic import BaseModel, field_validator
 
 
-class ItemCatalogo(BaseModel):
-    """Entrada del catálogo oficial de medicamentos.
+class CatalogItem(BaseModel):
+    """Official drug catalog entry.
 
-    Fuente de verdad contra la que se valida todo campo extraído.
-    Ingestada idempotentemente desde CIMA-AEMPS o DIGEMID.
+    Source of truth against which every extracted field is validated.
+    Ingested idempotently from CIMA-AEMPS or DIGEMID.
     """
 
     id: str
@@ -23,14 +23,14 @@ class ItemCatalogo(BaseModel):
 
     @field_validator("source")
     @classmethod
-    def source_valida(cls, v: str) -> str:
+    def source_valid(cls, v: str) -> str:
         if v not in {"cima", "digemid"}:
-            raise ValueError("source debe ser 'cima' o 'digemid'")
+            raise ValueError("source must be 'cima' or 'digemid'")
         return v
 
     @field_validator("id")
     @classmethod
-    def id_no_vacio(cls, v: str) -> str:
+    def id_not_empty(cls, v: str) -> str:
         if not v.strip():
-            raise ValueError("id no puede estar vacío")
+            raise ValueError("id cannot be empty")
         return v

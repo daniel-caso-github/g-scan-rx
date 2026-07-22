@@ -1,50 +1,50 @@
-"""Tests del generador sintético v1."""
+"""Tests for the synthetic prescription generator v1."""
 
-from src.domain.entities.receta import EstadoReceta
-from src.domain.value_objects.campo_extraido import EstadoCampo
+from src.domain.entities.prescription import PrescriptionStatus
+from src.domain.value_objects.extracted_field import FieldStatus
 
 
-class TestRecetaGenerator:
-    def test_genera_recetas(self, generator):
-        recetas = generator.generate(n=5)
-        assert len(recetas) == 5
+class TestPrescriptionGenerator:
+    def test_generates_prescriptions(self, generator):
+        prescriptions = generator.generate(n=5)
+        assert len(prescriptions) == 5
 
-    def test_receta_tiene_medicamentos(self, generator):
-        recetas = generator.generate(n=3)
-        for receta in recetas:
-            assert len(receta.medicamentos) >= 1
+    def test_prescription_has_medications(self, generator):
+        prescriptions = generator.generate(n=3)
+        for prescription in prescriptions:
+            assert len(prescription.medications) >= 1
 
-    def test_campos_tienen_crop(self, generator):
-        recetas = generator.generate(n=3)
-        for receta in recetas:
-            for med in receta.medicamentos:
-                for campo in (med.farmaco, med.dosis, med.frecuencia, med.duracion, med.via):
-                    assert campo.source_crop is not None
+    def test_fields_have_crop(self, generator):
+        prescriptions = generator.generate(n=3)
+        for prescription in prescriptions:
+            for med in prescription.medications:
+                for f in (med.drug, med.dose, med.frequency, med.duration, med.route):
+                    assert f.source_crop is not None
 
-    def test_ilegible_tiene_value_none(self, generator):
-        recetas = generator.generate(n=50)
-        for receta in recetas:
-            for med in receta.medicamentos:
-                for campo in (med.farmaco, med.dosis, med.frecuencia, med.duracion, med.via):
-                    if campo.status == EstadoCampo.ilegible:
-                        assert campo.value is None
+    def test_unreadable_has_value_none(self, generator):
+        prescriptions = generator.generate(n=50)
+        for prescription in prescriptions:
+            for med in prescription.medications:
+                for f in (med.drug, med.dose, med.frequency, med.duration, med.route):
+                    if f.status == FieldStatus.unreadable:
+                        assert f.value is None
 
-    def test_receta_status_pendiente(self, generator):
-        receta = generator.generate(n=1)[0]
-        assert receta.status == EstadoReceta.pendiente
+    def test_prescription_status_pending(self, generator):
+        prescription = generator.generate(n=1)[0]
+        assert prescription.status == PrescriptionStatus.pending
 
-    def test_ids_deterministas_con_mismo_seed(self, catalog):
-        from src.data.synthetic.generator import RecetaGenerator
+    def test_ids_deterministic_with_same_seed(self, catalog):
+        from src.data.synthetic.generator import PrescriptionGenerator
 
-        gen1 = RecetaGenerator(catalog=catalog, seed=99)
-        gen2 = RecetaGenerator(catalog=catalog, seed=99)
-        r1 = gen1.generate(n=3)
-        r2 = gen2.generate(n=3)
-        assert [r.id for r in r1] == [r.id for r in r2]
+        gen1 = PrescriptionGenerator(catalog=catalog, seed=99)
+        gen2 = PrescriptionGenerator(catalog=catalog, seed=99)
+        p1 = gen1.generate(n=3)
+        p2 = gen2.generate(n=3)
+        assert [p.id for p in p1] == [p.id for p in p2]
 
-    def test_ground_truth_tiene_receta_id(self, generator):
-        recetas = generator.generate(n=3)
-        gt = generator.generate_ground_truth(recetas)
-        ids_recetas = {r.id for r in recetas}
+    def test_ground_truth_has_prescription_id(self, generator):
+        prescriptions = generator.generate(n=3)
+        gt = generator.generate_ground_truth(prescriptions)
+        prescription_ids = {p.id for p in prescriptions}
         for entry in gt:
-            assert entry["receta_id"] in ids_recetas
+            assert entry["prescription_id"] in prescription_ids

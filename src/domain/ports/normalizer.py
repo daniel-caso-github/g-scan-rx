@@ -1,17 +1,17 @@
 from abc import ABC, abstractmethod
 
-from src.domain.value_objects.campo_extraido import CampoExtraido
-from src.domain.value_objects.dosis_normalizada import DosisNormalizada
+from src.domain.value_objects.extracted_field import ExtractedField
+from src.domain.value_objects.normalized_dose import NormalizedDose
 
 
 class Normalizer(ABC):
-    """Port: normaliza texto crudo extraído por el VLM a estructuras canónicas."""
+    """Port: normalizes raw text extracted by the VLM into canonical structures."""
 
     @abstractmethod
-    async def normalize_dosis(self, campo: CampoExtraido) -> DosisNormalizada | None:
-        """Convierte texto de dosis a unidades canónicas.
+    async def normalize_dose(self, field: ExtractedField) -> NormalizedDose | None:
+        """Converts dose text to canonical units.
 
-        Devuelve None si no se puede normalizar con confianza suficiente;
-        el caller marca el campo como dudoso.
+        Returns None if normalization cannot be done with sufficient confidence;
+        the caller marks the field as uncertain.
         """
         ...

@@ -1,18 +1,18 @@
 from abc import ABC, abstractmethod
 
-from src.domain.entities.item_catalogo import ItemCatalogo
+from src.domain.entities.catalog_item import CatalogItem
 
 
 class CatalogRepository(ABC):
-    """Port: persistencia y consulta del catálogo oficial de medicamentos."""
+    """Port: persistence and querying of the official drug catalog."""
 
     @abstractmethod
-    async def upsert(self, item: ItemCatalogo) -> None:
-        """Inserta o actualiza un ítem del catálogo (idempotente por id)."""
+    async def upsert(self, item: CatalogItem) -> None:
+        """Inserts or updates a catalog item (idempotent by id)."""
         ...
 
     @abstractmethod
-    async def get_by_id(self, item_id: str) -> ItemCatalogo | None:
+    async def get_by_id(self, item_id: str) -> CatalogItem | None:
         ...
 
     @abstractmethod

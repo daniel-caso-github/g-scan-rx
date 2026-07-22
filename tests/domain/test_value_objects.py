@@ -1,119 +1,119 @@
 import pytest
 
-from src.domain.value_objects.campo_extraido import CampoExtraido, EstadoCampo
-from src.domain.value_objects.dosis_normalizada import DosisNormalizada
-from src.domain.value_objects.recorte_imagen import RecorteImagen
-from src.domain.value_objects.veredicto_verificacion import EstadoVeredicto, VeredictoVerificacion
+from src.domain.value_objects.extracted_field import ExtractedField, FieldStatus
+from src.domain.value_objects.image_crop import ImageCrop
+from src.domain.value_objects.normalized_dose import NormalizedDose
+from src.domain.value_objects.verification_verdict import VerificationVerdict, VerdictStatus
 
 
-class TestRecorteImagen:
-    def test_crea_correctamente(self):
-        r = RecorteImagen(bbox=(10, 20, 100, 30), crop_ref="test.png")
+class TestImageCrop:
+    def test_creates_correctly(self):
+        r = ImageCrop(bbox=(10, 20, 100, 30), crop_ref="test.png")
         assert r.bbox == (10, 20, 100, 30)
 
-    def test_rechaza_ancho_cero(self):
+    def test_rejects_zero_width(self):
         with pytest.raises(ValueError):
-            RecorteImagen(bbox=(0, 0, 0, 30), crop_ref="x.png")
+            ImageCrop(bbox=(0, 0, 0, 30), crop_ref="x.png")
 
-    def test_rechaza_coordenadas_negativas(self):
+    def test_rejects_negative_coordinates(self):
         with pytest.raises(ValueError):
-            RecorteImagen(bbox=(-1, 0, 100, 30), crop_ref="x.png")
+            ImageCrop(bbox=(-1, 0, 100, 30), crop_ref="x.png")
 
-    def test_inmutable(self, recorte_dummy):
+    def test_immutable(self, crop_dummy):
         with pytest.raises((TypeError, ValueError)):
-            recorte_dummy.crop_ref = "otro.png"
+            crop_dummy.crop_ref = "other.png"
 
 
-class TestCampoExtraido:
-    def test_campo_legible(self, recorte_dummy):
-        c = CampoExtraido(
+class TestExtractedField:
+    def test_readable_field(self, crop_dummy):
+        f = ExtractedField(
             value="amoxicilina",
             confidence=0.9,
-            status=EstadoCampo.legible,
-            source_crop=recorte_dummy,
+            status=FieldStatus.readable,
+            source_crop=crop_dummy,
         )
-        assert c.value == "amoxicilina"
-        assert c.status == EstadoCampo.legible
+        assert f.value == "amoxicilina"
+        assert f.status == FieldStatus.readable
 
-    def test_ilegible_requiere_value_none(self, recorte_dummy):
+    def test_unreadable_requires_value_none(self, crop_dummy):
         with pytest.raises(ValueError):
-            CampoExtraido(
+            ExtractedField(
                 value="algo",
                 confidence=0.2,
-                status=EstadoCampo.ilegible,
-                source_crop=recorte_dummy,
+                status=FieldStatus.unreadable,
+                source_crop=crop_dummy,
             )
 
-    def test_legible_requiere_value(self, recorte_dummy):
+    def test_readable_requires_value(self, crop_dummy):
         with pytest.raises(ValueError):
-            CampoExtraido(
+            ExtractedField(
                 value=None,
                 confidence=0.9,
-                status=EstadoCampo.legible,
-                source_crop=recorte_dummy,
+                status=FieldStatus.readable,
+                source_crop=crop_dummy,
             )
 
-    def test_confidence_fuera_de_rango(self, recorte_dummy):
+    def test_confidence_out_of_range(self, crop_dummy):
         with pytest.raises(ValueError):
-            CampoExtraido(
+            ExtractedField(
                 value="x",
                 confidence=1.5,
-                status=EstadoCampo.legible,
-                source_crop=recorte_dummy,
+                status=FieldStatus.readable,
+                source_crop=crop_dummy,
             )
 
-    def test_campo_ilegible_correcto(self, recorte_dummy):
-        c = CampoExtraido(
+    def test_unreadable_field_correct(self, crop_dummy):
+        f = ExtractedField(
             value=None,
             confidence=0.1,
-            status=EstadoCampo.ilegible,
-            source_crop=recorte_dummy,
+            status=FieldStatus.unreadable,
+            source_crop=crop_dummy,
         )
-        assert c.value is None
+        assert f.value is None
 
 
-class TestDosisNormalizada:
-    def test_crea_correctamente(self):
-        d = DosisNormalizada(amount=500.0, unit="mg", frequency_hours=8.0, route="oral")
+class TestNormalizedDose:
+    def test_creates_correctly(self):
+        d = NormalizedDose(amount=500.0, unit="mg", frequency_hours=8.0, route="oral")
         assert d.amount == 500.0
         assert d.unit == "mg"
 
-    def test_amount_negativo_rechazado(self):
+    def test_negative_amount_rejected(self):
         with pytest.raises(ValueError):
-            DosisNormalizada(amount=-10.0, unit="mg")
+            NormalizedDose(amount=-10.0, unit="mg")
 
-    def test_unidad_no_canonica_rechazada(self):
+    def test_non_canonical_unit_rejected(self):
         with pytest.raises(ValueError):
-            DosisNormalizada(amount=500.0, unit="kilogramos")
+            NormalizedDose(amount=500.0, unit="kilogramos")
 
-    def test_via_no_canonica_rechazada(self):
+    def test_non_canonical_route_rejected(self):
         with pytest.raises(ValueError):
-            DosisNormalizada(amount=500.0, unit="mg", route="intragástrica")
+            NormalizedDose(amount=500.0, unit="mg", route="intragástrica")
 
-    def test_campos_opcionales_none(self):
-        d = DosisNormalizada(amount=20.0, unit="mg")
+    def test_optional_fields_none(self):
+        d = NormalizedDose(amount=20.0, unit="mg")
         assert d.frequency_hours is None
         assert d.route is None
 
 
-class TestVeredictoVerificacion:
-    def test_verificado_requiere_catalog_id(self):
+class TestVerificationVerdict:
+    def test_verified_requires_catalog_id(self):
         with pytest.raises(ValueError):
-            VeredictoVerificacion(
-                status=EstadoVeredicto.verificado,
+            VerificationVerdict(
+                status=VerdictStatus.verified,
                 catalog_item_id=None,
                 match_score=0.95,
             )
 
-    def test_dudoso_sin_catalog_id(self):
-        v = VeredictoVerificacion(status=EstadoVeredicto.dudoso, match_score=0.4)
+    def test_uncertain_without_catalog_id(self):
+        v = VerificationVerdict(status=VerdictStatus.uncertain, match_score=0.4)
         assert v.catalog_item_id is None
 
     def test_no_disponible(self):
-        v = VeredictoVerificacion.no_disponible()
-        assert v.status == EstadoVeredicto.dudoso
+        v = VerificationVerdict.no_disponible()
+        assert v.status == VerdictStatus.uncertain
         assert "verificación no disponible" in v.notes
 
-    def test_match_score_fuera_de_rango(self):
+    def test_match_score_out_of_range(self):
         with pytest.raises(ValueError):
-            VeredictoVerificacion(status=EstadoVeredicto.dudoso, match_score=1.5)
+            VerificationVerdict(status=VerdictStatus.uncertain, match_score=1.5)

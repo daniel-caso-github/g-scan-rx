@@ -1,11 +1,11 @@
-"""Catálogo seed pequeño para desarrollo y tests.
+"""Small seed catalog for development and tests.
 
-Fármacos reales (nombres y presentaciones), contenido ficticio en cuanto
-a rangos de dosis (aproximados para ilustración, no consejo médico).
-Se usa sólo en entornos de desarrollo y evaluación offline.
+Real drug names and presentations; dose ranges are approximate for
+illustration only (not medical advice). For development and offline
+evaluation only.
 """
 
-from src.domain.entities.item_catalogo import ItemCatalogo
+from src.domain.entities.catalog_item import CatalogItem
 from src.domain.services.make_id import make_id
 
 _SEED_DATA = [
@@ -92,9 +92,9 @@ _SEED_DATA = [
 ]
 
 
-def get_seed_catalog() -> list[ItemCatalogo]:
+def get_seed_catalog() -> list[CatalogItem]:
     items = []
     for entry in _SEED_DATA:
         item_id = make_id(entry["source"], entry["active_ingredient"], entry["presentation"])
-        items.append(ItemCatalogo(id=item_id, **entry))
+        items.append(CatalogItem(id=item_id, **entry))
     return items

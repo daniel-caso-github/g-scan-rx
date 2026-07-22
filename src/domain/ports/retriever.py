@@ -1,12 +1,12 @@
 from abc import ABC, abstractmethod
 
-from src.domain.entities.item_catalogo import ItemCatalogo
+from src.domain.entities.catalog_item import CatalogItem
 
 
 class Retriever(ABC):
-    """Port: recuperación híbrida de ítems del catálogo (BM25 + vectorial + reranker)."""
+    """Port: hybrid catalog retrieval (BM25 + vector + reranker)."""
 
     @abstractmethod
-    async def retrieve(self, query: str, top_k: int = 5) -> list[tuple[ItemCatalogo, float]]:
-        """Devuelve lista de (ítem, score) ordenada por relevancia descendente."""
+    async def retrieve(self, query: str, top_k: int = 5) -> list[tuple[CatalogItem, float]]:
+        """Returns a list of (item, score) sorted by descending relevance."""
         ...

@@ -1,8 +1,8 @@
 import pytest
 
 from src.data.synthetic.catalog_seed import get_seed_catalog
-from src.data.synthetic.generator import RecetaGenerator
-from src.domain.value_objects.recorte_imagen import RecorteImagen
+from src.data.synthetic.generator import PrescriptionGenerator
+from src.domain.value_objects.image_crop import ImageCrop
 
 
 @pytest.fixture(scope="session")
@@ -12,9 +12,9 @@ def catalog():
 
 @pytest.fixture(scope="session")
 def generator(catalog):
-    return RecetaGenerator(catalog=catalog, seed=42)
+    return PrescriptionGenerator(catalog=catalog, seed=42)
 
 
 @pytest.fixture
-def recorte_dummy():
-    return RecorteImagen(bbox=(0, 0, 100, 30), crop_ref="dummy.png")
+def crop_dummy():
+    return ImageCrop(bbox=(0, 0, 100, 30), crop_ref="dummy.png")

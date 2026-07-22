@@ -1,23 +1,23 @@
 from abc import ABC, abstractmethod
 
-from src.domain.entities.item_catalogo import ItemCatalogo
-from src.domain.value_objects.campo_extraido import CampoExtraido
-from src.domain.value_objects.dosis_normalizada import DosisNormalizada
-from src.domain.value_objects.veredicto_verificacion import VeredictoVerificacion
+from src.domain.entities.catalog_item import CatalogItem
+from src.domain.value_objects.extracted_field import ExtractedField
+from src.domain.value_objects.normalized_dose import NormalizedDose
+from src.domain.value_objects.verification_verdict import VerificationVerdict
 
 
 class Verifier(ABC):
-    """Port: verifica un campo extraído contra un ítem del catálogo.
+    """Port: verifies an extracted field against a catalog item.
 
-    Nunca levanta excepción hacia el pipeline; degrada a VeredictoVerificacion.no_disponible()
-    ante fallos de red o timeout.
+    Never raises an exception toward the pipeline; degrades to
+    VerificationVerdict.no_disponible() on network or timeout errors.
     """
 
     @abstractmethod
     async def verify(
         self,
-        farmaco: CampoExtraido,
-        dosis: DosisNormalizada | None,
-        candidate: ItemCatalogo,
-    ) -> VeredictoVerificacion:
+        drug: ExtractedField,
+        dose: NormalizedDose | None,
+        candidate: CatalogItem,
+    ) -> VerificationVerdict:
         ...
