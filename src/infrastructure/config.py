@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     vision_model: str = "claude-opus-4-8"
     vision_confidence_readable: float = 0.7
     vision_confidence_uncertain: float = 0.3
+    gemini_api_key: str = ""
+    gemini_model: str = "gemini-2.0-flash"
 
     model_config = SettingsConfigDict(env_file="app.env", env_file_encoding="utf-8")
 

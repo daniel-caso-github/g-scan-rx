@@ -26,6 +26,7 @@ catalog = [
 vision = [
     "anthropic>=0.40",
     "openai>=1.51",
+    "google-genai>=1.0",
     "pillow>=11.0",
     "opencv-python-headless>=4.10",
     "albumentations>=1.4",
