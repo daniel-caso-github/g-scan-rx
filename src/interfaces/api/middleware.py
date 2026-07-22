@@ -33,7 +33,10 @@ class PrometheusMiddleware(BaseHTTPMiddleware):
         start = time.perf_counter()
         response = await call_next(request)
         duration = time.perf_counter() - start
-        endpoint = request.url.path
+        # Use the route template (e.g. /agent/{thread_id}/confirm) instead of the raw path
+        # to avoid unbounded label cardinality from path parameters.
+        route = request.scope.get("route")
+        endpoint = route.path if route is not None else request.url.path
         REQUEST_COUNT.labels(endpoint=endpoint, status_code=str(response.status_code)).inc()
         REQUEST_LATENCY.labels(endpoint=endpoint).observe(duration)
         return response

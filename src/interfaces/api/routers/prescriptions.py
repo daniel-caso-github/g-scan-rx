@@ -60,7 +60,14 @@ async def extract(
                 )
             pii_result = await pii_guardrail.check(extracted_text)
             if not pii_result.passed:
-                logger.warning("PII detectado en extracción para image_hash=%s", image_hash)
+                # Do not return the prescription: it contains PII-flagged text.
+                # Log only the image hash — never the flagged content.
+                logger.error("PII detectado en extracción, respuesta bloqueada; image_hash=%s", image_hash)
+                EXTRACTIONS_TOTAL.labels(result="pii_blocked").inc()
+                return ApiResponse.fail(
+                    code="PII_DETECTED",
+                    message="La imagen contiene datos personales identificables; no se puede procesar",
+                )
 
         EXTRACTIONS_TOTAL.labels(result="success").inc()
         return ApiResponse.ok(prescription)
