@@ -52,6 +52,8 @@ observability = [
 api = [
     "fastapi>=0.115",
     "uvicorn[standard]>=0.32",
+    "slowapi>=0.1.9",
+    "cachetools>=5.3",
 ]
 
 [build-system]

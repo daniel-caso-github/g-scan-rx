@@ -10,6 +10,7 @@ from src.application.use_cases.extract_prescription import ExtractPrescriptionUs
 from src.application.use_cases.verify_medication import VerifyMedicationUseCase
 from src.config import settings
 from src.domain.ports.guardrail import Guardrail
+from src.domain.ports.image_cache import ImageCache
 from src.domain.ports.tracer import Tracer
 from src.infrastructure.persistence.catalog_repository import SqlAlchemyCatalogRepository
 from src.interfaces.api.bootstrap import AppContainer, Bootstrap
@@ -79,3 +80,7 @@ def get_injection_guardrail(request: Request) -> Guardrail:
 
 def get_tracer(request: Request) -> Tracer:
     return _container(request).tracer
+
+
+def get_image_cache(request: Request) -> ImageCache:
+    return _container(request).image_cache

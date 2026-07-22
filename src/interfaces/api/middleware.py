@@ -1,6 +1,7 @@
 import time
 
-from prometheus_client import Counter, Histogram
+from prometheus_client import Histogram
+from prometheus_client import Counter
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
@@ -14,15 +15,6 @@ REQUEST_LATENCY = Histogram(
     "gscan_request_duration_seconds",
     "HTTP request latency in seconds",
     ["endpoint"],
-)
-ABSTENTIONS_TOTAL = Counter(
-    "gscan_abstentions_total",
-    "Agent abstentions due to out-of-distribution images",
-)
-EXTRACTIONS_TOTAL = Counter(
-    "gscan_extractions_total",
-    "Total prescription extraction attempts",
-    ["result"],
 )
 
 

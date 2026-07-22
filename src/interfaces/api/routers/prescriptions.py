@@ -1,27 +1,33 @@
 import hashlib
 import logging
 
-from fastapi import APIRouter, Depends, File, Response, UploadFile
+from fastapi import APIRouter, Depends, File, Request, Response, UploadFile
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 from src.application.agent.react_loop import AgentAbstainError, ReActLoop
 from src.application.use_cases.extract_prescription import ExtractPrescriptionUseCase
 from src.application.use_cases.verify_medication import VerifyMedicationUseCase
+from src.config import settings
 from src.domain.entities.prescription import Prescription
 from src.domain.entities.verified_record import VerifiedRecord
 from src.domain.ports.guardrail import Guardrail
+from src.domain.ports.image_cache import ImageCache
+from src.infrastructure.observability.metrics import ABSTENTIONS_TOTAL, CACHE_HITS_TOTAL, EXTRACTIONS_TOTAL
 from src.interfaces.api.dependencies import (
     get_extract_uc,
+    get_image_cache,
     get_injection_guardrail,
     get_pii_guardrail,
     get_react_loop,
     get_verify_uc,
 )
-from src.interfaces.api.middleware import ABSTENTIONS_TOTAL, EXTRACTIONS_TOTAL
 from src.interfaces.api.schemas import ApiResponse, HealthResponse
 
 logger = logging.getLogger(__name__)
 
+limiter = Limiter(key_func=get_remote_address)
 router = APIRouter(tags=["prescriptions"])
 
 
@@ -36,15 +42,25 @@ async def metrics() -> Response:
 
 
 @router.post("/extract", response_model=ApiResponse[Prescription])
+@limiter.limit(settings.rate_limit_extract)
 async def extract(
+    request: Request,
     file: UploadFile = File(...),
     use_case: ExtractPrescriptionUseCase = Depends(get_extract_uc),
     pii_guardrail: Guardrail = Depends(get_pii_guardrail),
     injection_guardrail: Guardrail = Depends(get_injection_guardrail),
+    image_cache: ImageCache = Depends(get_image_cache),
 ) -> ApiResponse[Prescription]:
     try:
         image_bytes = await file.read()
         image_hash = hashlib.sha256(image_bytes).hexdigest()
+
+        cached = await image_cache.get(image_hash)
+        if cached is not None:
+            CACHE_HITS_TOTAL.inc()
+            EXTRACTIONS_TOTAL.labels(result="cache_hit").inc()
+            return ApiResponse.ok(cached)
+
         prescription = await use_case.execute(image_bytes, image_hash)
 
         extracted_text = " ".join(
@@ -60,8 +76,6 @@ async def extract(
                 )
             pii_result = await pii_guardrail.check(extracted_text)
             if not pii_result.passed:
-                # Do not return the prescription: it contains PII-flagged text.
-                # Log only the image hash — never the flagged content.
                 logger.error("PII detectado en extracción, respuesta bloqueada; image_hash=%s", image_hash)
                 EXTRACTIONS_TOTAL.labels(result="pii_blocked").inc()
                 return ApiResponse.fail(
@@ -69,6 +83,7 @@ async def extract(
                     message="La imagen contiene datos personales identificables; no se puede procesar",
                 )
 
+        await image_cache.set(image_hash, prescription)
         EXTRACTIONS_TOTAL.labels(result="success").inc()
         return ApiResponse.ok(prescription)
     except Exception:
@@ -91,7 +106,9 @@ async def verify(
 
 
 @router.post("/process", response_model=ApiResponse[VerifiedRecord])
+@limiter.limit(settings.rate_limit_process)
 async def process(
+    request: Request,
     file: UploadFile = File(...),
     loop: ReActLoop = Depends(get_react_loop),
 ) -> ApiResponse[VerifiedRecord]:

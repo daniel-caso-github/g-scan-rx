@@ -10,8 +10,18 @@ from src.domain.entities.extracted_medication import ExtractedMedication
 from src.domain.ports.vision_extractor import VisionExtractor
 from src.domain.value_objects.extracted_field import ExtractedField, FieldStatus
 from src.domain.value_objects.image_crop import ImageCrop
+from src.infrastructure.observability.circuit_breaker import CircuitBreaker
+from src.infrastructure.observability.metrics import (
+    CIRCUIT_OPEN_TOTAL,
+    COST_USD_TOTAL,
+    TOKENS_TOTAL,
+)
 
 logger = logging.getLogger(__name__)
+
+# Gemini 2.0 Flash pricing (USD per token, approximate)
+_INPUT_COST_PER_TOKEN = 0.10 / 1_000_000
+_OUTPUT_COST_PER_TOKEN = 0.40 / 1_000_000
 
 EXTRACTION_PROMPT = """Analiza esta imagen de receta médica manuscrita. Extrae todos los medicamentos presentes.
 
@@ -78,11 +88,19 @@ class GeminiVisionAdapter(VisionExtractor):
         self._model = model
         self._readable_threshold = readable_threshold
         self._uncertain_threshold = uncertain_threshold
+        self._breaker = CircuitBreaker(fail_max=5, reset_timeout=60.0, name="gemini_vision")
 
     async def extract(self, image_bytes: bytes) -> list[ExtractedMedication]:
+        if not self._breaker.allow_request():
+            logger.error("Circuit breaker OPEN para gemini_vision; devolviendo lista vacía")
+            CIRCUIT_OPEN_TOTAL.labels(service="gemini_vision").inc()
+            return []
         try:
-            return await self._extract_with_retry(image_bytes)
+            result = await self._extract_with_retry(image_bytes)
+            self._breaker.record_success()
+            return result
         except Exception:
+            self._breaker.record_failure()
             logger.warning("Error al llamar a Gemini Vision; devolviendo lista vacía")
             return []
 
@@ -100,6 +118,8 @@ class GeminiVisionAdapter(VisionExtractor):
                 types.Part.from_text(text=EXTRACTION_PROMPT),
             ],
         )
+
+        self._track_usage(response)
 
         data = _parse_json(response.text)
         medications: list[ExtractedMedication] = []
@@ -128,3 +148,17 @@ class GeminiVisionAdapter(VisionExtractor):
             medications.append(ExtractedMedication(**fields, crop=crop))
 
         return medications
+
+    def _track_usage(self, response) -> None:
+        usage = getattr(response, "usage_metadata", None)
+        if usage is None:
+            return
+        try:
+            input_tokens = int(getattr(usage, "prompt_token_count", None) or 0)
+            output_tokens = int(getattr(usage, "candidates_token_count", None) or 0)
+        except (TypeError, ValueError):
+            return
+        cost = input_tokens * _INPUT_COST_PER_TOKEN + output_tokens * _OUTPUT_COST_PER_TOKEN
+        TOKENS_TOTAL.labels(model=self._model, direction="input").inc(input_tokens)
+        TOKENS_TOTAL.labels(model=self._model, direction="output").inc(output_tokens)
+        COST_USD_TOTAL.labels(model=self._model).inc(cost)

@@ -16,6 +16,9 @@ class Settings(BaseSettings):
     vision_confidence_uncertain: float = 0.3
     gemini_api_key: str = ""
     gemini_model: str = "gemini-2.0-flash"
+    cache_maxsize: int = 256
+    rate_limit_extract: str = "10/minute"
+    rate_limit_process: str = "10/minute"
 
     model_config = SettingsConfigDict(env_file="app.env", env_file_encoding="utf-8")
 
