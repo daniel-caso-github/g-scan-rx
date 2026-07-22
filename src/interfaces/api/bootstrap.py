@@ -10,9 +10,13 @@ from src.application.use_cases.extract_prescription import ExtractPrescriptionUs
 from src.application.use_cases.verify_medication import VerifyMedicationUseCase
 from src.config import settings
 from src.domain.entities.catalog_item import CatalogItem
+from src.domain.ports.guardrail import Guardrail
+from src.domain.ports.tracer import Tracer
 from src.infrastructure.embedding.embedder import Embedder
+from src.infrastructure.guardrails.null_guardrail import NullGuardrail
 from src.infrastructure.mcp.server import build_mcp_server
 from src.infrastructure.normalizer.gemini_normalizer_adapter import GeminiNormalizerAdapter
+from src.infrastructure.observability.null_tracer import NullTracer
 from src.infrastructure.retrieval.hybrid_retriever import HybridRetriever
 from src.infrastructure.verification.catalog_verifier_adapter import CatalogVerifierAdapter
 from src.infrastructure.vision.gemini_vision_adapter import GeminiVisionAdapter
@@ -31,11 +35,17 @@ class AppContainer:
         verify_uc: VerifyMedicationUseCase,
         react_loop: ReActLoop,
         agent_graph: Any,
+        pii_guardrail: Guardrail,
+        injection_guardrail: Guardrail,
+        tracer: Tracer,
     ) -> None:
         self.extract_uc = extract_uc
         self.verify_uc = verify_uc
         self.react_loop = react_loop
         self.agent_graph = agent_graph
+        self.pii_guardrail = pii_guardrail
+        self.injection_guardrail = injection_guardrail
+        self.tracer = tracer
 
 
 class Bootstrap:
@@ -79,11 +89,18 @@ class Bootstrap:
             checkpointer=MemorySaver(),
         )
 
+        pii_guardrail = self._build_pii_guardrail()
+        injection_guardrail = self._build_injection_guardrail()
+        tracer = self._build_tracer()
+
         return AppContainer(
             extract_uc=extract_uc,
             verify_uc=verify_uc,
             react_loop=react_loop,
             agent_graph=agent_graph,
+            pii_guardrail=pii_guardrail,
+            injection_guardrail=injection_guardrail,
+            tracer=tracer,
         )
 
     @staticmethod
@@ -92,6 +109,38 @@ class Bootstrap:
             tool = await mcp_server.get_tool(name)
             return await tool.fn(**kwargs)
         return _tool
+
+    @staticmethod
+    def _build_pii_guardrail() -> Guardrail:
+        try:
+            from src.infrastructure.guardrails.pii_guardrail import PiiGuardrail
+            return PiiGuardrail()
+        except Exception:
+            logger.warning("presidio no disponible — PiiGuardrail desactivado")
+            return NullGuardrail()
+
+    @staticmethod
+    def _build_injection_guardrail() -> Guardrail:
+        try:
+            from src.infrastructure.guardrails.injection_guardrail import InjectionGuardrail
+            return InjectionGuardrail()
+        except Exception:
+            logger.warning("llm-guard no disponible — InjectionGuardrail desactivado")
+            return NullGuardrail()
+
+    @staticmethod
+    def _build_tracer() -> Tracer:
+        if settings.langfuse_public_key and settings.langfuse_secret_key:
+            try:
+                from src.infrastructure.observability.langfuse_tracer import LangfuseTracer
+                return LangfuseTracer(
+                    public_key=settings.langfuse_public_key,
+                    secret_key=settings.langfuse_secret_key,
+                    host=settings.langfuse_host,
+                )
+            except Exception:
+                logger.warning("Error inicializando Langfuse — trazas desactivadas")
+        return NullTracer()
 
 
 def build_extract_uc_standalone() -> ExtractPrescriptionUseCase:
