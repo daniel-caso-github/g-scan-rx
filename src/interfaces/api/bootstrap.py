@@ -61,13 +61,16 @@ class Bootstrap:
     def build(self) -> AppContainer:
         client = genai.Client(api_key=settings.gemini_api_key)
 
+        tracer = self._build_tracer()
+
         extractor = GeminiVisionAdapter(
             client=client,
             model=settings.gemini_model,
             readable_threshold=settings.vision_confidence_readable,
             uncertain_threshold=settings.vision_confidence_uncertain,
+            tracer=tracer,
         )
-        normalizer = GeminiNormalizerAdapter(client=client, model=settings.gemini_model)
+        normalizer = GeminiNormalizerAdapter(client=client, model=settings.gemini_model, tracer=tracer)
         verifier = CatalogVerifierAdapter()
         embedder = Embedder()
         retriever = HybridRetriever(corpus=self._corpus, embedder=embedder)
@@ -95,7 +98,6 @@ class Bootstrap:
 
         pii_guardrail = self._build_pii_guardrail()
         injection_guardrail = self._build_injection_guardrail()
-        tracer = self._build_tracer()
         image_cache = MemoryImageCache(maxsize=settings.cache_maxsize)
 
         return AppContainer(

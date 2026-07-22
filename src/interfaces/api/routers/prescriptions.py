@@ -14,6 +14,7 @@ from src.domain.entities.prescription import Prescription
 from src.domain.entities.verified_record import VerifiedRecord
 from src.domain.ports.guardrail import Guardrail
 from src.domain.ports.image_cache import ImageCache
+from src.domain.ports.tracer import Tracer
 from src.infrastructure.observability.metrics import ABSTENTIONS_TOTAL, CACHE_HITS_TOTAL, EXTRACTIONS_TOTAL
 from src.interfaces.api.dependencies import (
     get_extract_uc,
@@ -21,6 +22,7 @@ from src.interfaces.api.dependencies import (
     get_injection_guardrail,
     get_pii_guardrail,
     get_react_loop,
+    get_tracer,
     get_verify_uc,
 )
 from src.interfaces.api.schemas import ApiResponse, HealthResponse
@@ -50,6 +52,7 @@ async def extract(
     pii_guardrail: Guardrail = Depends(get_pii_guardrail),
     injection_guardrail: Guardrail = Depends(get_injection_guardrail),
     image_cache: ImageCache = Depends(get_image_cache),
+    tracer: Tracer = Depends(get_tracer),
 ) -> ApiResponse[Prescription]:
     try:
         image_bytes = await file.read()
@@ -61,29 +64,31 @@ async def extract(
             EXTRACTIONS_TOTAL.labels(result="cache_hit").inc()
             return ApiResponse.ok(cached)
 
-        prescription = await use_case.execute(image_bytes, image_hash)
+        with tracer.span("extract-prescription", input={"image_hash": image_hash}):
+            prescription = await use_case.execute(image_bytes, image_hash)
 
-        extracted_text = " ".join(
-            str(med.drug.value) for med in prescription.medications if med.drug.value
-        )
-        if extracted_text:
-            inj_result = await injection_guardrail.check(extracted_text)
-            if not inj_result.passed:
-                EXTRACTIONS_TOTAL.labels(result="injection_blocked").inc()
-                return ApiResponse.fail(
-                    code="INJECTION_DETECTED",
-                    message="Contenido adversario detectado en la imagen",
-                )
-            pii_result = await pii_guardrail.check(extracted_text)
-            if not pii_result.passed:
-                logger.error("PII detectado en extracción, respuesta bloqueada; image_hash=%s", image_hash)
-                EXTRACTIONS_TOTAL.labels(result="pii_blocked").inc()
-                return ApiResponse.fail(
-                    code="PII_DETECTED",
-                    message="La imagen contiene datos personales identificables; no se puede procesar",
-                )
+            extracted_text = " ".join(
+                str(med.drug.value) for med in prescription.medications if med.drug.value
+            )
+            if extracted_text:
+                inj_result = await injection_guardrail.check(extracted_text)
+                if not inj_result.passed:
+                    EXTRACTIONS_TOTAL.labels(result="injection_blocked").inc()
+                    return ApiResponse.fail(
+                        code="INJECTION_DETECTED",
+                        message="Contenido adversario detectado en la imagen",
+                    )
+                pii_result = await pii_guardrail.check(extracted_text)
+                if not pii_result.passed:
+                    logger.error("PII detectado en extracción, respuesta bloqueada; image_hash=%s", image_hash)
+                    EXTRACTIONS_TOTAL.labels(result="pii_blocked").inc()
+                    return ApiResponse.fail(
+                        code="PII_DETECTED",
+                        message="La imagen contiene datos personales identificables; no se puede procesar",
+                    )
 
-        await image_cache.set(image_hash, prescription)
+            await image_cache.set(image_hash, prescription)
+
         EXTRACTIONS_TOTAL.labels(result="success").inc()
         return ApiResponse.ok(prescription)
     except Exception:

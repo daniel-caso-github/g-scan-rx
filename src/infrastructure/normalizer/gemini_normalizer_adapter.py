@@ -6,6 +6,7 @@ from google.genai import types
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
 from src.domain.ports.normalizer import Normalizer
+from src.domain.ports.tracer import Tracer
 from src.domain.value_objects.extracted_field import ExtractedField, FieldStatus
 from src.domain.value_objects.normalized_dose import NormalizedDose
 from src.infrastructure.observability.circuit_breaker import CircuitBreaker
@@ -14,6 +15,7 @@ from src.infrastructure.observability.metrics import (
     COST_USD_TOTAL,
     TOKENS_TOTAL,
 )
+from src.infrastructure.observability.null_tracer import NullTracer
 
 logger = logging.getLogger(__name__)
 
@@ -42,10 +44,11 @@ _VALID_UNITS = {
 
 
 class GeminiNormalizerAdapter(Normalizer):
-    def __init__(self, client: genai.Client, model: str) -> None:
+    def __init__(self, client: genai.Client, model: str, tracer: Tracer | None = None) -> None:
         self._client = client
         self._model = model
         self._breaker = CircuitBreaker(fail_max=5, reset_timeout=60.0, name="gemini_normalizer")
+        self._tracer = tracer or NullTracer()
 
     async def normalize_dose(self, field: ExtractedField) -> NormalizedDose | None:
         if field.status == FieldStatus.unreadable or field.value is None:
@@ -84,12 +87,28 @@ class GeminiNormalizerAdapter(Normalizer):
         reraise=True,
     )
     async def _call_model(self, value: str) -> tuple[str, object]:
-        response = await self._client.aio.models.generate_content(
+        with self._tracer.generation(
+            name="gemini-normalizer",
             model=self._model,
-            contents=[NORMALIZATION_PROMPT.format(value=value)],
-            config=types.GenerateContentConfig(temperature=0.0),
-        )
-        return response.text, getattr(response, "usage_metadata", None)
+            input={"value": value},
+        ) as gen:
+            response = await self._client.aio.models.generate_content(
+                model=self._model,
+                contents=[NORMALIZATION_PROMPT.format(value=value)],
+                config=types.GenerateContentConfig(temperature=0.0),
+            )
+            usage = getattr(response, "usage_metadata", None)
+            try:
+                gen.update(
+                    output=response.text,
+                    usage_details={
+                        "input_tokens": int(getattr(usage, "prompt_token_count", None) or 0) if usage else 0,
+                        "output_tokens": int(getattr(usage, "candidates_token_count", None) or 0) if usage else 0,
+                    },
+                )
+            except Exception:
+                pass
+        return response.text, usage
 
     def _track_usage(self, usage) -> None:
         if usage is None:
