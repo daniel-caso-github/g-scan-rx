@@ -18,3 +18,8 @@ class CatalogRepository(ABC):
     @abstractmethod
     async def count(self) -> int:
         ...
+
+    @abstractmethod
+    async def list_all(self) -> list[CatalogItem]:
+        """Returns all catalog items (used to build in-memory retrieval corpus)."""
+        ...

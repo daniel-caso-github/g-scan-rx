@@ -3,7 +3,7 @@ import hashlib
 import sys
 from pathlib import Path
 
-from src.interfaces.api.dependencies import get_extract_prescription_use_case
+from src.interfaces.api.bootstrap import build_extract_uc_standalone as build_extract_uc
 
 
 def _hash(data: bytes) -> str:
@@ -12,7 +12,7 @@ def _hash(data: bytes) -> str:
 
 async def _run(image_path: Path, print_json: bool) -> None:
     image_bytes = image_path.read_bytes()
-    use_case = get_extract_prescription_use_case()
+    use_case = build_extract_uc()
     prescription = await use_case.execute(image_bytes, _hash(image_bytes))
 
     if print_json:

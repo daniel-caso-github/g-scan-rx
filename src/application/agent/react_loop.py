@@ -1,8 +1,9 @@
 import base64
 import logging
-from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Any, Callable, Awaitable
+
+from pydantic import BaseModel, Field
 
 from src.domain.entities.verified_record import VerifiedRecord
 
@@ -12,7 +13,7 @@ AsyncTool = Callable[..., Awaitable[Any]]
 
 
 class AgentAbstainError(Exception):
-    """El agente se abstiene porque la imagen fue identificada como fuera de distribución."""
+    """Agent abstains because the image was identified as out-of-distribution."""
 
 
 class _Action(StrEnum):
@@ -23,17 +24,15 @@ class _Action(StrEnum):
     ABSTAIN = "abstain"
 
 
-@dataclass
-class AgentStep:
+class AgentStep(BaseModel):
     action: str
     observation: dict
 
 
-@dataclass
-class _State:
+class _State(BaseModel):
     image_b64: str
     image_hash: str
-    steps: list[AgentStep] = field(default_factory=list)
+    steps: list[AgentStep] = Field(default_factory=list)
     prescription_data: dict | None = None
     record_data: dict | None = None
     anomaly_checked: bool = False
@@ -41,10 +40,10 @@ class _State:
 
 
 class ReActLoop:
-    """Ciclo Reason-Act-Observe puro en Python para procesar una receta.
+    """Pure Python Reason-Act-Observe loop for processing a prescription.
 
-    Dependencias inyectadas como callables async; no importa de infrastructure.
-    La versión LangGraph (Step 4) reutilizará estas mismas tools via graph.py.
+    Tools injected as async callables; no infrastructure imports.
+    The LangGraph version (Step 4) reuses these same tools via graph.py.
     """
 
     def __init__(
