@@ -62,3 +62,7 @@ adapters/
 # Alembic
 alembic/versions/*.py
 !alembic/versions/.gitkeep
+
+# Claude Code — configuración local y guías de agente (no subir al repo)
+.claude/
+CLAUDE.md
