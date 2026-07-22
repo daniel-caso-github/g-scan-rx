@@ -7,6 +7,7 @@ from google.genai import types
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
 from src.domain.entities.extracted_medication import ExtractedMedication
+from src.domain.ports.tracer import Tracer
 from src.domain.ports.vision_extractor import VisionExtractor
 from src.domain.value_objects.extracted_field import ExtractedField, FieldStatus
 from src.domain.value_objects.image_crop import ImageCrop
@@ -16,6 +17,7 @@ from src.infrastructure.observability.metrics import (
     COST_USD_TOTAL,
     TOKENS_TOTAL,
 )
+from src.infrastructure.observability.null_tracer import NullTracer
 
 logger = logging.getLogger(__name__)
 
@@ -83,12 +85,14 @@ class GeminiVisionAdapter(VisionExtractor):
         model: str,
         readable_threshold: float,
         uncertain_threshold: float,
+        tracer: Tracer | None = None,
     ) -> None:
         self._client = client
         self._model = model
         self._readable_threshold = readable_threshold
         self._uncertain_threshold = uncertain_threshold
         self._breaker = CircuitBreaker(fail_max=5, reset_timeout=60.0, name="gemini_vision")
+        self._tracer = tracer or NullTracer()
 
     async def extract(self, image_bytes: bytes) -> list[ExtractedMedication]:
         if not self._breaker.allow_request():
@@ -111,15 +115,32 @@ class GeminiVisionAdapter(VisionExtractor):
         reraise=True,
     )
     async def _extract_with_retry(self, image_bytes: bytes) -> list[ExtractedMedication]:
-        response = await self._client.aio.models.generate_content(
+        with self._tracer.generation(
+            name="gemini-vision",
             model=self._model,
-            contents=[
-                types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg"),
-                types.Part.from_text(text=EXTRACTION_PROMPT),
-            ],
-        )
+            input={"image_size_bytes": len(image_bytes), "prompt": EXTRACTION_PROMPT},
+        ) as gen:
+            response = await self._client.aio.models.generate_content(
+                model=self._model,
+                contents=[
+                    types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg"),
+                    types.Part.from_text(text=EXTRACTION_PROMPT),
+                ],
+            )
 
-        self._track_usage(response)
+            self._track_usage(response)
+
+            usage = getattr(response, "usage_metadata", None)
+            try:
+                gen.update(
+                    output=response.text[:1000],
+                    usage_details={
+                        "input_tokens": int(getattr(usage, "prompt_token_count", None) or 0) if usage else 0,
+                        "output_tokens": int(getattr(usage, "candidates_token_count", None) or 0) if usage else 0,
+                    },
+                )
+            except Exception:
+                pass
 
         data = _parse_json(response.text)
         medications: list[ExtractedMedication] = []

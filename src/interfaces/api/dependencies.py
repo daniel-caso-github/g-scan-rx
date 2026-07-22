@@ -44,6 +44,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     yield
 
+    if container is not None:
+        container.tracer.flush()
     await engine.dispose()
 
 
