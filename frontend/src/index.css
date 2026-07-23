@@ -1,0 +1,30 @@
+*, *::before, *::after { box-sizing: border-box; }
+html, body, #root { margin: 0; padding: 0; height: 100%; }
+body { font-family: 'IBM Plex Sans', sans-serif; background: #eaeef2; color: #14232e; }
+input { font-family: inherit; }
+::selection { background: #0d6d8a22; }
+
+@keyframes gsr-scan {
+  0%   { top: 6%; }
+  50%  { top: 88%; }
+  100% { top: 6%; }
+}
+@keyframes gsr-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes gsr-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes gsr-pop {
+  0%   { transform: scale(.6); opacity: 0; }
+  60%  { transform: scale(1.08); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.gsr-scroll::-webkit-scrollbar { width: 10px; }
+.gsr-scroll::-webkit-scrollbar-thumb {
+  background: #c6d2da;
+  border-radius: 8px;
+  border: 2px solid #eaeef2;
+}

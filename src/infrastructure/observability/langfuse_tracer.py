@@ -25,29 +25,26 @@ class LangfuseTracer(Tracer):
     @contextmanager
     def span(self, name: str, **kwargs):
         try:
-            with self._lf.start_as_current_observation(
-                as_type="span",
-                name=name,
-                **kwargs,
-            ) as obs:
-                yield obs
+            lf_ctx = self._lf.start_as_current_observation(as_type="span", name=name, **kwargs)
         except Exception:
-            logger.exception("Error creando span Langfuse: name=%s", name)
+            logger.exception("Error iniciando span Langfuse: name=%s", name)
             yield None
+            return
+        with lf_ctx as obs:
+            yield obs
 
     @contextmanager
     def generation(self, name: str, model: str, input: dict):
         try:
-            with self._lf.start_as_current_observation(
-                as_type="generation",
-                name=name,
-                model=model,
-                input=input,
-            ) as obs:
-                yield obs
+            lf_ctx = self._lf.start_as_current_observation(
+                as_type="generation", name=name, model=model, input=input,
+            )
         except Exception:
-            logger.exception("Error creando generation Langfuse: name=%s", name)
+            logger.exception("Error iniciando generation Langfuse: name=%s", name)
             yield _NullObs()
+            return
+        with lf_ctx as obs:
+            yield obs
 
     def flush(self) -> None:
         try:

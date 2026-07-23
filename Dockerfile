@@ -13,6 +13,7 @@ FROM base AS deps
 COPY pyproject.toml ./
 RUN uv sync --extra dev --extra catalog --extra vision --extra retrieval \
     --extra agent --extra guardrails --extra observability --extra api
+RUN uv pip install "https://github.com/explosion/spacy-models/releases/download/es_core_news_sm-3.8.0/es_core_news_sm-3.8.0-py3-none-any.whl"
 
 FROM base AS final
 COPY --from=deps /app/.venv /app/.venv

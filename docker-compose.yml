@@ -30,5 +30,16 @@ services:
     command: >
       sh -c "alembic upgrade head && uvicorn src.interfaces.api.main:app --host 0.0.0.0 --port 8000 --reload"
 
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+      - ./frontend/vite.config.ts:/app/vite.config.ts
+    depends_on:
+      - app
+
 volumes:
   pgdata:

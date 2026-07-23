@@ -123,9 +123,9 @@ class Bootstrap:
         try:
             from src.infrastructure.guardrails.pii_guardrail import PiiGuardrail
             return PiiGuardrail()
-        except Exception:
+        except BaseException:
             # Fail-open: log at ERROR so ops notices the degradation immediately.
-            # presidio requires spacy models; missing model is a misconfiguration, not a transient error.
+            # spacy.cli.download raises SystemExit (not Exception) when pip is absent.
             logger.error("presidio no disponible — PiiGuardrail DESACTIVADO; todo texto pasará sin inspección PII")
             return NullGuardrail()
 
