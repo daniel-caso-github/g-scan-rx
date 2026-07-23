@@ -7,6 +7,7 @@ from google.genai import types
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
 from src.domain.entities.extracted_medication import ExtractedMedication
+from src.domain.ports.text_scrubber import TextScrubber
 from src.domain.ports.tracer import Tracer
 from src.domain.ports.vision_extractor import VisionExtractor
 from src.domain.value_objects.extracted_field import ExtractedField, FieldStatus
@@ -18,6 +19,7 @@ from src.infrastructure.observability.metrics import (
     TOKENS_TOTAL,
 )
 from src.infrastructure.observability.null_tracer import NullTracer
+from src.infrastructure.scrubbing.null_text_scrubber import NullTextScrubber
 
 logger = logging.getLogger(__name__)
 
@@ -86,6 +88,7 @@ class GeminiVisionAdapter(VisionExtractor):
         readable_threshold: float,
         uncertain_threshold: float,
         tracer: Tracer | None = None,
+        scrubber: TextScrubber | None = None,
     ) -> None:
         self._client = client
         self._model = model
@@ -93,6 +96,7 @@ class GeminiVisionAdapter(VisionExtractor):
         self._uncertain_threshold = uncertain_threshold
         self._breaker = CircuitBreaker(fail_max=5, reset_timeout=60.0, name="gemini_vision")
         self._tracer = tracer or NullTracer()
+        self._scrubber = scrubber or NullTextScrubber()
 
     async def extract(self, image_bytes: bytes) -> list[ExtractedMedication]:
         if not self._breaker.allow_request():
@@ -132,8 +136,10 @@ class GeminiVisionAdapter(VisionExtractor):
 
             usage = getattr(response, "usage_metadata", None)
             try:
+                # Scrub PII from the raw VLM output before it reaches Langfuse.
+                scrubbed_output = self._scrubber.scrub(response.text[:1000])
                 gen.update(
-                    output=response.text[:1000],
+                    output=scrubbed_output,
                     usage_details={
                         "input_tokens": int(getattr(usage, "prompt_token_count", None) or 0) if usage else 0,
                         "output_tokens": int(getattr(usage, "candidates_token_count", None) or 0) if usage else 0,

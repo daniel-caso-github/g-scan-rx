@@ -1,4 +1,3 @@
-import pytest
 
 from src.domain.entities.catalog_item import CatalogItem
 from src.domain.value_objects.extracted_field import ExtractedField, FieldStatus

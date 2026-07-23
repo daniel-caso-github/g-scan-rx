@@ -1,7 +1,5 @@
 from unittest.mock import AsyncMock, patch
 
-import pytest
-
 from src.infrastructure.catalog.cima import CimaClient
 
 SAMPLE_RESPONSE_P1 = {

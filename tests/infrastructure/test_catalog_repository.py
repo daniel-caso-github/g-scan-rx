@@ -1,5 +1,7 @@
 from __future__ import annotations
+
 from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
 
 from src.domain.entities.catalog_item import CatalogItem
@@ -9,6 +11,8 @@ _SA_PATCH = {
     "sqlalchemy": MagicMock(),
     "sqlalchemy.dialects": MagicMock(),
     "sqlalchemy.dialects.postgresql": MagicMock(),
+    "sqlalchemy.ext": MagicMock(),
+    "sqlalchemy.ext.asyncio": MagicMock(),
     "src.infrastructure.persistence.orm_models": MagicMock(),
 }
 

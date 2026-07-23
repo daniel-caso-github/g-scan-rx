@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 from prometheus_client import REGISTRY
 
-from src.interfaces.api.middleware import PrometheusMiddleware, REQUEST_COUNT
+from src.interfaces.api.middleware import PrometheusMiddleware
 
 
 def _make_app() -> FastAPI:

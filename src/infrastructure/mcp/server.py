@@ -17,6 +17,7 @@ def build_mcp_server(
     verify_uc: VerifyMedicationUseCase,
     retriever: Retriever,
     anomaly_detector: AnomalyDetector | None = None,
+    anomaly_threshold: float = 0.5,
 ) -> FastMCP:
     mcp = FastMCP("gscan-rx")
 
@@ -66,6 +67,6 @@ def build_mcp_server(
             """
             image_bytes = base64.b64decode(image_b64)
             score = await anomaly_detector.score(image_bytes)
-            return {"score": score, "is_anomaly": score > 0.5}
+            return {"score": score, "is_anomaly": score > anomaly_threshold}
 
     return mcp

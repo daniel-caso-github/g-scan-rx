@@ -24,6 +24,7 @@ services:
     volumes:
       - ./src:/app/src
       - ./tests:/app/tests
+      - ./pyproject.toml:/app/pyproject.toml
     depends_on:
       app-db:
         condition: service_healthy

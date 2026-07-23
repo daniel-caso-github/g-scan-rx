@@ -1,7 +1,5 @@
 from unittest.mock import AsyncMock, MagicMock
 
-import pytest
-
 from src.application.use_cases.verify_medication import VerifyMedicationUseCase
 from src.domain.entities.catalog_item import CatalogItem
 from src.domain.entities.extracted_medication import ExtractedMedication

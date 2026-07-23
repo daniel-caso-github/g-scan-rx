@@ -91,6 +91,22 @@ export function ConfirmedPage({ result, meds, onReset }: Props) {
         >
           Nueva receta · New prescription
         </button>
+
+        <div style={{
+          display: "flex", alignItems: "flex-start", gap: 9, marginTop: 26,
+          padding: "13px 16px", background: C.amberBg,
+          border: `1px solid ${C.amberBd}`, borderRadius: 11, textAlign: "left",
+        }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ flex: "0 0 auto", marginTop: 1 }}>
+            <circle cx="12" cy="12" r="9" stroke={C.amber} strokeWidth="1.8"/>
+            <path d="M12 8v5M12 16v.5" stroke={C.amber} strokeWidth="1.8" strokeLinecap="round"/>
+          </svg>
+          <span style={{ fontSize: 12.5, color: "#8a6a2e", lineHeight: 1.45 }}>
+            Este resultado es de verificación asistida y no reemplaza la validación farmacéutica
+            profesional. · This result comes from assisted verification and does not replace
+            professional pharmaceutical validation.
+          </span>
+        </div>
       </div>
     </div>
   );

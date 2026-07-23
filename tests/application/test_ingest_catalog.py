@@ -12,10 +12,10 @@ def catalog():
 
 
 @pytest.fixture
-def mock_client(catalog):
-    client = MagicMock()
-    client.fetch_all = AsyncMock(return_value=catalog[:3])
-    return client
+def mock_source(catalog):
+    source = MagicMock()
+    source.fetch_all = AsyncMock(return_value=catalog[:3])
+    return source
 
 
 @pytest.fixture
@@ -26,8 +26,8 @@ def mock_repository():
 
 
 @pytest.fixture
-def use_case(mock_client, mock_repository):
-    return IngestCatalogUseCase(client=mock_client, repository=mock_repository)
+def use_case(mock_source, mock_repository):
+    return IngestCatalogUseCase(source=mock_source, repository=mock_repository)
 
 
 async def test_execute_upserts_all_items(use_case, mock_repository):
@@ -35,10 +35,10 @@ async def test_execute_upserts_all_items(use_case, mock_repository):
     assert mock_repository.upsert.call_count == 3
 
 
-async def test_execute_captures_error_without_breaking(mock_client, mock_repository, catalog):
-    mock_client.fetch_all = AsyncMock(return_value=catalog[:3])
+async def test_execute_captures_error_without_breaking(mock_source, mock_repository, catalog):
+    mock_source.fetch_all = AsyncMock(return_value=catalog[:3])
     mock_repository.upsert.side_effect = [None, Exception("DB error"), None]
-    uc = IngestCatalogUseCase(client=mock_client, repository=mock_repository)
+    uc = IngestCatalogUseCase(source=mock_source, repository=mock_repository)
     result = await uc.execute()
     assert mock_repository.upsert.call_count == 3
     assert len(result.errors) == 1

@@ -61,7 +61,7 @@ class HybridRetriever(Retriever):
 
     def _bm25_search(self, query: str) -> list[tuple[CatalogItem, float]]:
         scores = self._bm25.get_scores(query.lower().split())
-        ranked = sorted(zip(self._corpus, scores), key=lambda x: x[1], reverse=True)
+        ranked = sorted(zip(self._corpus, scores, strict=True), key=lambda x: x[1], reverse=True)
         return [(item, float(score)) for item, score in ranked]
 
     def _vector_search(self, query: str) -> list[tuple[CatalogItem, float]]:
@@ -69,14 +69,16 @@ class HybridRetriever(Retriever):
         similarities = [
             self._cosine_similarity(query_emb, emb) for emb in self._corpus_embeddings
         ]
-        ranked = sorted(zip(self._corpus, similarities), key=lambda x: x[1], reverse=True)
+        ranked = sorted(
+            zip(self._corpus, similarities, strict=True), key=lambda x: x[1], reverse=True
+        )
         return [(item, float(s)) for item, s in ranked]
 
     @staticmethod
     def _cosine_similarity(a: list[float], b: list[float]) -> float:
         if not a or not b or len(a) != len(b):
             return 0.0
-        dot = sum(x * y for x, y in zip(a, b))
+        dot = sum(x * y for x, y in zip(a, b, strict=True))
         norm_a = math.sqrt(sum(x * x for x in a))
         norm_b = math.sqrt(sum(x * x for x in b))
         if norm_a == 0.0 or norm_b == 0.0:
@@ -119,7 +121,7 @@ class HybridRetriever(Retriever):
             pairs = [(query, Embedder.text_for_item(item)) for item, _ in candidates]
             reranker_scores = self._reranker.predict(pairs)
             reranked = sorted(
-                zip([item for item, _ in candidates], reranker_scores),
+                zip([item for item, _ in candidates], reranker_scores, strict=True),
                 key=lambda x: x[1],
                 reverse=True,
             )

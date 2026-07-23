@@ -1,8 +1,4 @@
-from typing import Generic, TypeVar
-
 from pydantic import BaseModel
-
-T = TypeVar("T")
 
 
 class ApiError(BaseModel):
@@ -10,7 +6,7 @@ class ApiError(BaseModel):
     message: str
 
 
-class ApiResponse(BaseModel, Generic[T]):
+class ApiResponse[T](BaseModel):
     data: T | None = None
     error: ApiError | None = None
 
@@ -23,8 +19,14 @@ class ApiResponse(BaseModel, Generic[T]):
         return cls(data=None, error=ApiError(code=code, message=message))
 
 
+class GuardrailsHealth(BaseModel):
+    pii: str
+    injection: str
+
+
 class HealthResponse(BaseModel):
     status: str
+    guardrails: GuardrailsHealth | None = None
 
 
 class AgentStateDTO(BaseModel):

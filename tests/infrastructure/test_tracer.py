@@ -24,10 +24,10 @@ def test_langfuse_tracer_falls_back_on_import_error(monkeypatch):
         from unittest.mock import patch
 
         with patch.dict("sys.modules", {"langfuse": None}):
+            from src.infrastructure.observability.null_tracer import NullTracer
             from src.interfaces.api.bootstrap import Bootstrap
-            from src.infrastructure.observability.null_tracer import NullTracer as NT
 
             tracer = Bootstrap._build_tracer()
-            assert isinstance(tracer, NT)
+            assert isinstance(tracer, NullTracer)
     finally:
         sys.modules.update(saved)
