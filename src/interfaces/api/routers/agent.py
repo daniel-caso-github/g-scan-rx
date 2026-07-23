@@ -3,9 +3,7 @@ import hashlib
 import logging
 import uuid
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
-
-logger = logging.getLogger(__name__)
+from fastapi import APIRouter, Depends, File, UploadFile
 
 from src.application.agent.graph import AgentGraphState
 from src.interfaces.api.dependencies import get_agent_graph
@@ -15,6 +13,8 @@ from src.interfaces.api.schemas import (
     AgentStateDTO,
     ApiResponse,
 )
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/agent", tags=["agent"])
 

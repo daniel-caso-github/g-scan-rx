@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 
 from src.domain.ports.catalog_repository import CatalogRepository
-from src.infrastructure.catalog.cima import CimaClient
+from src.domain.ports.catalog_source import CatalogSource
 
 
 @dataclass
@@ -12,13 +12,13 @@ class IngestResult:
 
 
 class IngestCatalogUseCase:
-    def __init__(self, client: CimaClient, repository: CatalogRepository) -> None:
-        self._client = client
+    def __init__(self, source: CatalogSource, repository: CatalogRepository) -> None:
+        self._source = source
         self._repository = repository
 
     async def execute(self, limit: int | None = None) -> IngestResult:
         result = IngestResult()
-        items = await self._client.fetch_all(limit=limit)
+        items = await self._source.fetch_all(limit=limit)
         result.total_fetched = len(items)
         for item in items:
             try:

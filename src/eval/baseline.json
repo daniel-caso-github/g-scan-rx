@@ -1,0 +1,27 @@
+{
+  "_note": "Umbrales MEDIDOS sobre el seed golden set sintético. Regenerar con python -m src.eval.build_baseline tras cambiar el seed set.",
+  "hallucination_rate_max": 0.05,
+  "incorrect_abstention_rate_max": 0.2233,
+  "by_field": {
+    "drug": {
+      "exact_match_min": 0.9,
+      "incorrect_abstention_rate_max": 0.3
+    },
+    "dose": {
+      "exact_match_min": 0.9,
+      "incorrect_abstention_rate_max": 0.1
+    },
+    "frequency": {
+      "exact_match_min": 0.9,
+      "incorrect_abstention_rate_max": 0.1714
+    },
+    "duration": {
+      "exact_match_min": 0.9,
+      "incorrect_abstention_rate_max": 0.3857
+    },
+    "route": {
+      "exact_match_min": 0.9,
+      "incorrect_abstention_rate_max": 0.1667
+    }
+  }
+}

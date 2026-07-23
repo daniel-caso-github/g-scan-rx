@@ -23,6 +23,5 @@ COPY pyproject.toml ./
 COPY alembic.ini ./
 COPY alembic/ ./alembic/
 COPY src/ ./src/
-COPY scripts/ ./scripts/
 
 CMD ["uvicorn", "src.interfaces.api.main:app", "--host", "0.0.0.0", "--port", "8000"]

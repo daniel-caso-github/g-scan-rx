@@ -16,5 +16,5 @@ class Tracer(ABC):
         input: dict,
     ) -> AbstractContextManager: ...
 
-    def flush(self) -> None:
-        pass
+    def flush(self) -> None:  # noqa: B027 - optional hook; no-op default is intentional
+        """Optional no-op hook; tracers with buffered output may override it."""

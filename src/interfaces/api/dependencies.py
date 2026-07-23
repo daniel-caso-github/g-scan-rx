@@ -1,6 +1,6 @@
 import logging
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator
 
 from fastapi import FastAPI, HTTPException, Request
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
@@ -13,7 +13,7 @@ from src.domain.ports.guardrail import Guardrail
 from src.domain.ports.image_cache import ImageCache
 from src.domain.ports.tracer import Tracer
 from src.infrastructure.persistence.catalog_repository import SqlAlchemyCatalogRepository
-from src.interfaces.api.bootstrap import AppContainer, Bootstrap
+from src.interfaces.api.bootstrap import AppContainer, Bootstrap, GuardrailBootstrapError
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +37,10 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     else:
         try:
             container = Bootstrap(corpus).build()
+        except GuardrailBootstrapError:
+            # Fail-closed (GUARDRAILS_REQUIRED): abort startup, do not degrade.
+            logger.error("Guardrail crítico no disponible con GUARDRAILS_REQUIRED activo; abortando arranque")
+            raise
         except Exception:
             logger.exception("Error en Bootstrap; VLM no disponible")
 

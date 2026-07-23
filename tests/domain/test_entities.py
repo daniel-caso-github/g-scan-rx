@@ -6,7 +6,7 @@ from src.domain.entities.verified_record import VerifiedField, VerifiedMedicatio
 from src.domain.services.make_id import make_id
 from src.domain.value_objects.extracted_field import ExtractedField, FieldStatus
 from src.domain.value_objects.image_crop import ImageCrop
-from src.domain.value_objects.verification_verdict import VerificationVerdict, VerdictStatus
+from src.domain.value_objects.verification_verdict import VerdictStatus, VerificationVerdict
 
 
 @pytest.fixture

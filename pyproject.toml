@@ -77,6 +77,17 @@ ignore = ["E501"]
 [tool.ruff.lint.isort]
 known-first-party = ["src"]
 
+[tool.ruff.lint.flake8-bugbear]
+# FastAPI uses these as parameter defaults by design (dependency injection);
+# they are not the mutable-default footgun B008 targets.
+extend-immutable-calls = [
+    "fastapi.Depends",
+    "fastapi.File",
+    "fastapi.Query",
+    "fastapi.Form",
+    "fastapi.Body",
+]
+
 [tool.uv]
 required-environments = [
     "sys_platform == 'linux' and platform_machine == 'aarch64'",

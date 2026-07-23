@@ -36,7 +36,7 @@ export function PrescriptionImage({ meds, focused, onFocus, imageUrl }: Props) {
   const [zoomed, setZoomed] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [isDragging, setIsDragging] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(undefined);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const dragOrigin = useRef<{ x: number; y: number; sl: number; st: number } | null>(null);
 
   function openZoom() { setZoomLevel(1); setZoomed(true); }

@@ -2,6 +2,7 @@ import httpx
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
 from src.domain.entities.catalog_item import CatalogItem
+from src.domain.ports.catalog_source import CatalogSource
 from src.domain.services.make_id import make_id
 
 
@@ -11,7 +12,7 @@ def _is_retryable(exc: BaseException) -> bool:
     return isinstance(exc, (httpx.TimeoutException, httpx.ConnectError))
 
 
-class CimaClient:
+class CimaClient(CatalogSource):
     BASE_URL = "https://cima.aemps.es/cima/rest"
 
     def __init__(self, timeout: float = 30.0) -> None:

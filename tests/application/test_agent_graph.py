@@ -1,7 +1,6 @@
 import base64
 from unittest.mock import AsyncMock
 
-import pytest
 from langgraph.checkpoint.memory import MemorySaver
 
 from src.application.agent.graph import AgentGraphState, build_graph

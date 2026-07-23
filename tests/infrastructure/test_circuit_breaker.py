@@ -1,7 +1,5 @@
 import time
 
-import pytest
-
 from src.infrastructure.observability.circuit_breaker import CircuitBreaker, CircuitState
 
 

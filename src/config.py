@@ -2,7 +2,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    database_url: str = "postgresql+psycopg://gscan:gscan@localhost:5432/gscan_rx"
+    # No default: DATABASE_URL must be provided via env (app.env / env_file).
+    # Embedding credentials in code is a security risk; fail loudly if missing.
+    database_url: str
     gemini_api_key: str = ""
     gemini_model: str = "gemini-2.5-flash"
     langfuse_public_key: str = ""
@@ -13,6 +15,13 @@ class Settings(BaseSettings):
     cache_maxsize: int = 256
     rate_limit_extract: str = "10/minute"
     rate_limit_process: str = "10/minute"
+    # Fail-closed switch for production: if True and a critical guardrail
+    # (PII / prompt injection) fails to load, startup aborts instead of
+    # silently degrading to NullGuardrail. Default False for local dev.
+    guardrails_required: bool = False
+    # OOD / anomaly detection threshold: scores above this mark the image as
+    # out-of-distribution (not a prescription) and trigger abstention.
+    anomaly_threshold: float = 0.5
 
     model_config = SettingsConfigDict(env_file="app.env", env_file_encoding="utf-8")
 

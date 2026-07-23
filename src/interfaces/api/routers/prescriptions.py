@@ -15,7 +15,11 @@ from src.domain.entities.verified_record import VerifiedRecord
 from src.domain.ports.guardrail import Guardrail
 from src.domain.ports.image_cache import ImageCache
 from src.domain.ports.tracer import Tracer
-from src.infrastructure.observability.metrics import ABSTENTIONS_TOTAL, CACHE_HITS_TOTAL, EXTRACTIONS_TOTAL
+from src.infrastructure.observability.metrics import (
+    ABSTENTIONS_TOTAL,
+    CACHE_HITS_TOTAL,
+    EXTRACTIONS_TOTAL,
+)
 from src.interfaces.api.dependencies import (
     get_extract_uc,
     get_image_cache,
@@ -25,7 +29,7 @@ from src.interfaces.api.dependencies import (
     get_tracer,
     get_verify_uc,
 )
-from src.interfaces.api.schemas import ApiResponse, HealthResponse
+from src.interfaces.api.schemas import ApiResponse, GuardrailsHealth, HealthResponse
 
 logger = logging.getLogger(__name__)
 
@@ -34,8 +38,15 @@ router = APIRouter(tags=["prescriptions"])
 
 
 @router.get("/health", response_model=HealthResponse)
-async def health() -> HealthResponse:
-    return HealthResponse(status="ok")
+async def health(request: Request) -> HealthResponse:
+    container = getattr(request.app.state, "container", None)
+    guardrails = None
+    if container is not None:
+        guardrails = GuardrailsHealth(
+            pii=container.pii_guardrail_status,
+            injection=container.injection_guardrail_status,
+        )
+    return HealthResponse(status="ok", guardrails=guardrails)
 
 
 @router.get("/metrics", include_in_schema=False)

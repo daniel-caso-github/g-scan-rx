@@ -1,7 +1,5 @@
 import json
-from unittest.mock import AsyncMock, MagicMock, patch
-
-import pytest
+from unittest.mock import AsyncMock, MagicMock
 
 from src.domain.value_objects.extracted_field import FieldStatus
 from src.infrastructure.vision.gemini_vision_adapter import GeminiVisionAdapter

@@ -1,4 +1,14 @@
+import os
+
 import pytest
+
+# Ensure a DATABASE_URL exists for offline test runs. DATABASE_URL is required
+# (no insecure default in src/config.py); in Docker it comes from app.env, but
+# outside Docker we inject a throwaway URL so importing src.config never fails.
+# Tests are offline-first and never open a real connection.
+os.environ.setdefault(
+    "DATABASE_URL", "postgresql+psycopg://test:test@localhost:5432/test"
+)
 
 from src.data.synthetic.catalog_seed import get_seed_catalog
 from src.data.synthetic.generator import PrescriptionGenerator

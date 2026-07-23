@@ -2,6 +2,7 @@ import base64
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+from pydantic import ValidationError
 
 from src.domain.entities.catalog_item import CatalogItem
 from src.domain.entities.extracted_medication import ExtractedMedication
@@ -147,7 +148,7 @@ async def test_verify_prescription_validates_prescription_model():
     extract_uc, verify_uc, retriever = _make_mocks()
     server = build_mcp_server(extract_uc, verify_uc, retriever)
     tool = await server.get_tool("verify_prescription")
-    with pytest.raises(Exception):
+    with pytest.raises(ValidationError):
         await tool.fn(prescription_data={"invalid": "data"})
 
 

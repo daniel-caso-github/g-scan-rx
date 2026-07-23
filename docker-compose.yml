@@ -18,12 +18,16 @@ services:
   app:
     build: .
     env_file:
-      - app.env
+      # Optional so CI (and any env without local secrets) can build/run without app.env.
+      # Settings has safe defaults for every field. Requires Docker Compose v2.24+.
+      - path: app.env
+        required: false
     ports:
       - "8000:8000"
     volumes:
       - ./src:/app/src
       - ./tests:/app/tests
+      - ./pyproject.toml:/app/pyproject.toml
     depends_on:
       app-db:
         condition: service_healthy
