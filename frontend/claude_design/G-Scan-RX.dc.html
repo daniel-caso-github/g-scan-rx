@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  ::selection{background:#0d6d8a22}
+  a{color:#0d6d8a;text-decoration:none}
+  a:hover{color:#084d5c}
+  input{font-family:inherit}
+  @keyframes gsr-scan{0%{top:6%}50%{top:88%}100%{top:6%}}
+  @keyframes gsr-up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes gsr-spin{to{transform:rotate(360deg)}}
+  @keyframes gsr-pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+  .gsr-scroll::-webkit-scrollbar{width:10px}
+  .gsr-scroll::-webkit-scrollbar-thumb{background:#c6d2da;border-radius:8px;border:2px solid #eaeef2}
+</style>
+</helmet>
+<div style="height:100vh;display:flex;flex-direction:column;background:#eaeef2;color:#14232e;font-family:'IBM Plex Sans',sans-serif;overflow:hidden">
+
+  <header style="flex:0 0 auto;height:66px;display:flex;align-items:center;gap:18px;padding:0 26px;background:#ffffff;border-bottom:1px solid #dce4ea">
+    <div style="display:flex;align-items:center;gap:11px">
+      <div style="width:34px;height:34px;border-radius:9px;background:#0d6d8a;display:flex;align-items:center;justify-content:center;flex:0 0 auto">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="2.5" stroke="#fff" stroke-width="1.8"/><path d="M3 9h18" stroke="#fff" stroke-width="1.8"/><path d="M7 13h6M7 16h9" stroke="#7fd4dd" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </div>
+      <div style="display:flex;flex-direction:column;line-height:1.05">
+        <span style="font-weight:700;font-size:17px;letter-spacing:.2px">G-Scan-RX</span>
+        <span style="font-size:11px;color:#8a99a3;font-weight:500">Rx digitization &amp; verification</span>
+      </div>
+    </div>
+    <div style="flex:1"></div>
+    <div style="display:flex;align-items:center;gap:8px;padding:7px 14px;border-radius:999px;background:#eef7f9;border:1px solid #cfe6ea">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6l7-3z" stroke="#0d6d8a" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke="#0d6d8a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span style="font-size:12.5px;font-weight:600;color:#08505f">El sistema nunca adivina · The system never guesses</span>
+    </div>
+  </header>
+
+  <main style="flex:1;position:relative;overflow:hidden">
+
+    <!-- ══ UPLOAD ══ -->
+    <sc-if value="{{ isUpload }}" hint-placeholder-val="{{ true }}">
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:32px">
+        <div style="width:560px;max-width:100%">
+          <div style="text-align:center;margin-bottom:26px">
+            <div style="font-size:26px;font-weight:700;letter-spacing:-.3px">Digitalizar receta manuscrita</div>
+            <div style="font-size:15px;color:#5f6f7a;margin-top:5px">Digitize a handwritten prescription</div>
+          </div>
+          <label style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:52px 28px;background:#ffffff;border:2px dashed #b9c8d1;border-radius:16px;cursor:pointer;transition:.15s" style-hover="border-color:#0d6d8a;background:#f6fbfc">
+            <div style="width:58px;height:58px;border-radius:14px;background:#eef7f9;display:flex;align-items:center;justify-content:center">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M12 16V4m0 0l-4 4m4-4l4 4" stroke="#0d6d8a" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 15v3a2 2 0 002 2h12a2 2 0 002-2v-3" stroke="#0d6d8a" stroke-width="1.9" stroke-linecap="round"/></svg>
+            </div>
+            <div style="text-align:center">
+              <div style="font-size:16px;font-weight:600">Arrastre una foto o haga clic para subir</div>
+              <div style="font-size:13px;color:#8a99a3;margin-top:3px">Drag a photo or click to upload · JPEG / PNG</div>
+            </div>
+            <input type="file" accept="image/*" onChange="{{ onFile }}" style="display:none">
+          </label>
+          <div style="display:flex;justify-content:center;margin-top:20px">
+            <button onClick="{{ useSample }}" style="display:inline-flex;align-items:center;gap:9px;padding:13px 22px;border-radius:11px;border:none;background:#0d6d8a;color:#fff;font-size:14.5px;font-weight:600;cursor:pointer;font-family:inherit" style-hover="background:#084d5c">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><rect x="4" y="3" width="16" height="18" rx="2" stroke="#fff" stroke-width="1.7"/><path d="M8 8h8M8 12h8M8 16h5" stroke="#7fd4dd" stroke-width="1.7" stroke-linecap="round"/></svg>
+              Usar receta de ejemplo · Use sample prescription
+            </button>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:9px;margin-top:26px;padding:13px 16px;background:#fbf6ee;border:1px solid #ecdcbf;border-radius:11px">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="flex:0 0 auto;margin-top:1px"><path d="M12 3l9 16H3l9-16z" stroke="#b9770a" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 10v4M12 16.5v.5" stroke="#b9770a" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <span style="font-size:12.5px;color:#8a6a2e;line-height:1.45">Las imágenes con datos personales identificables se rechazan automáticamente. · Images containing identifiable personal data are rejected automatically.</span>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ══ PROCESSING ══ -->
+    <sc-if value="{{ isProcessing }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:34px;padding:32px">
+        <div style="position:relative;width:190px;height:250px;background:#fff;border-radius:10px;box-shadow:0 10px 34px rgba(20,35,46,.14);overflow:hidden;border:1px solid #e4eaee">
+          <div style="position:absolute;left:16px;top:16px;font-family:'Caveat',cursive;font-size:26px;color:#cf3b3b;font-weight:700">Rx</div>
+          <div style="position:absolute;left:16px;top:64px;right:16px;display:flex;flex-direction:column;gap:13px">
+            <div style="height:9px;width:80%;background:#e9eef1;border-radius:4px"></div>
+            <div style="height:9px;width:60%;background:#e9eef1;border-radius:4px"></div>
+            <div style="height:9px;width:72%;background:#e9eef1;border-radius:4px"></div>
+            <div style="height:9px;width:50%;background:#e9eef1;border-radius:4px"></div>
+            <div style="height:9px;width:66%;background:#e9eef1;border-radius:4px"></div>
+          </div>
+          <div style="position:absolute;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#0d6d8a,transparent);box-shadow:0 0 14px 3px #0d6d8a66;animation:gsr-scan 1.8s ease-in-out infinite"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:13px;min-width:300px">
+          <div style="display:flex;align-items:center;gap:11px;animation:gsr-up .4s both;animation-delay:.1s">
+            <span style="width:22px;height:22px;border-radius:50%;border:2.5px solid #0d6d8a;border-top-color:transparent;animation:gsr-spin .8s linear infinite;flex:0 0 auto"></span>
+            <span style="font-size:14.5px;font-weight:600">Extrayendo campos · Extracting fields</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:11px;color:#8a99a3;animation:gsr-up .4s both;animation-delay:.7s">
+            <span style="width:22px;height:22px;border-radius:50%;border:2px solid #cdd8de;flex:0 0 auto"></span>
+            <span style="font-size:14.5px;font-weight:500">Verificando en catálogo CIMA · Verifying against CIMA catalog</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:11px;color:#8a99a3;animation:gsr-up .4s both;animation-delay:1.3s">
+            <span style="width:22px;height:22px;border-radius:50%;border:2px solid #cdd8de;flex:0 0 auto"></span>
+            <span style="font-size:14.5px;font-weight:500">Marcando abstenciones · Flagging abstentions</span>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ══ REVIEW ══ -->
+    <sc-if value="{{ isReview }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column">
+        <div style="flex:0 0 auto;display:flex;align-items:center;gap:20px;padding:14px 26px;background:#fff;border-bottom:1px solid #dce4ea">
+          <div>
+            <div style="font-size:17px;font-weight:700">Revisión de receta · Prescription review</div>
+            <div style="font-size:12.5px;color:#8a99a3;font-family:'IBM Plex Mono',monospace">ID {{ prescriptionId }}</div>
+          </div>
+          <div style="flex:1"></div>
+          <sc-if value="{{ needsReview }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;align-items:center;gap:8px;padding:7px 14px;border-radius:999px;background:#fbf0d8;border:1px solid #ecdcbf">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 3l9 16H3l9-16z" stroke="#b9770a" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 10v4M12 16.5v.5" stroke="#b9770a" stroke-width="1.9" stroke-linecap="round"/></svg>
+              <span style="font-size:12.5px;font-weight:600;color:#8a6a2e">Requiere revisión humana · Needs human review</span>
+            </div>
+          </sc-if>
+          <div style="display:flex;align-items:center;gap:11px;min-width:210px">
+            <div style="text-align:right">
+              <div style="font-size:11px;color:#8a99a3;font-weight:500;text-transform:uppercase;letter-spacing:.5px">Confianza global</div>
+              <div style="font-size:11px;color:#8a99a3;font-weight:500;margin-top:-1px">Overall confidence</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:4px;width:110px">
+              <div style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:15px;text-align:right;color:#b9770a">{{ overallText }}</div>
+              <div style="height:7px;border-radius:4px;background:#e9eef1;overflow:hidden"><div style="{{ overallBarStyle }}"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="flex:1;display:flex;overflow:hidden">
+          <!-- LEFT: image + boxes -->
+          <div style="flex:0 0 42%;display:flex;flex-direction:column;padding:20px 22px;border-right:1px solid #dce4ea;background:#f2f5f7;overflow:hidden">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+              <div style="font-size:13px;font-weight:600;color:#5f6f7a">Imagen original · Original image</div>
+              <div style="font-size:11.5px;color:#9aa7b0">Pase el cursor sobre un campo · Hover a field</div>
+            </div>
+            <div style="flex:1;display:flex;align-items:center;justify-content:center;min-height:0">
+              <div style="position:relative;height:100%;aspect-ratio:3/4;max-width:100%;background:#fffdf8;border-radius:8px;box-shadow:0 8px 30px rgba(20,35,46,.13);border:1px solid #e6e0d2;background-image:repeating-linear-gradient(#fffdf8,#fffdf8 33px,#f0ece1 33px,#f0ece1 34px)">
+                <div style="position:absolute;left:6%;top:3.5%;font-family:'Caveat',cursive;font-size:30px;font-weight:700;color:#cf3b3b">Rx</div>
+                <div style="position:absolute;right:6%;top:4.5%;text-align:right;font-family:'Caveat',cursive;font-size:16px;color:#5b6b76;line-height:1.3">Clínica San Rafael<br>12 / 07 / 2026</div>
+                <div style="position:absolute;left:6%;top:15%;font-family:'Caveat',cursive;font-size:17px;color:#3a4a54">Paciente: ██████████</div>
+                <div style="position:absolute;left:6%;top:20.5%;right:6%;border-bottom:1.5px solid #d8d2c4"></div>
+                <sc-for list="{{ boxes }}" as="box" hint-placeholder-count="0">
+                  <div style="{{ box.style }}" onMouseEnter="{{ box.focus }}" onMouseLeave="{{ clearFocus }}">
+                    <sc-if value="{{ box.scribble }}" hint-placeholder-val="{{ false }}">
+                      <svg width="70%" height="46%" viewBox="0 0 120 24" preserveAspectRatio="none"><path d="M3 12 q6 -11 12 0 t12 0 t12 0 t12 0 t12 0 t12 0 t12 0 t12 0" fill="none" stroke="#cf3b3b" stroke-width="3" stroke-linecap="round" opacity=".55"/></svg>
+                    </sc-if>
+                    <sc-if value="{{ box.legible }}" hint-placeholder-val="{{ true }}">
+                      <span style="{{ box.handStyle }}">{{ box.hand }}</span>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <div style="display:flex;gap:16px;margin-top:14px;flex-wrap:wrap">
+              <div style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:#5f6f7a"><span style="width:11px;height:11px;border-radius:3px;border:1.5px solid #1f9d57;background:#e7f6ed"></span>Legible</div>
+              <div style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:#5f6f7a"><span style="width:11px;height:11px;border-radius:3px;border:1.5px solid #b9770a;background:#fbf0d8"></span>Dudoso · Uncertain</div>
+              <div style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:#5f6f7a"><span style="width:11px;height:11px;border-radius:3px;border:1.5px dashed #cf3b3b;background:#fbe8e8"></span>No legible · Abstention</div>
+            </div>
+          </div>
+
+          <!-- RIGHT: med cards -->
+          <div class="gsr-scroll" style="flex:1;overflow-y:auto;padding:20px 22px;display:flex;flex-direction:column;gap:16px">
+            <sc-for list="{{ meds }}" as="med" hint-placeholder-count="3">
+              <div style="flex:0 0 auto;background:#fff;border:1px solid #dce4ea;border-radius:14px;overflow:hidden;box-shadow:0 1px 3px rgba(20,35,46,.05)">
+                <div style="display:flex;align-items:center;gap:14px;padding:15px 18px;border-bottom:1px solid #eef2f4">
+                  <span style="width:30px;height:30px;border-radius:8px;background:#eef7f9;color:#0d6d8a;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;font-family:'IBM Plex Mono',monospace">{{ med.indexLabel }}</span>
+                  <div style="flex:1;min-width:0">
+                    <div style="{{ med.nameStyle }}">{{ med.name }}</div>
+                    <div style="font-size:12px;color:#8a99a3;font-family:'IBM Plex Mono',monospace;margin-top:2px">{{ med.catalogLine }}</div>
+                  </div>
+                  <div style="{{ med.verdict.badgeStyle }}">
+                    <span style="font-size:14px;line-height:1">{{ med.verdict.symbol }}</span>
+                    <span>{{ med.verdict.label }}</span>
+                  </div>
+                </div>
+                <div style="display:flex;flex-direction:column">
+                  <sc-for list="{{ med.fields }}" as="field" hint-placeholder-count="5">
+                    <div style="{{ field.rowStyle }}" onMouseEnter="{{ field.focus }}" onMouseLeave="{{ clearFocus }}">
+                      <div style="flex:0 0 118px;padding-top:2px">
+                        <div style="font-size:13.5px;font-weight:600">{{ field.labelEs }}</div>
+                        <div style="font-size:11.5px;color:#9aa7b0;margin-top:-1px">{{ field.labelEn }}</div>
+                      </div>
+                      <div style="flex:1;min-width:0">
+                        <sc-if value="{{ field.showValue }}" hint-placeholder-val="{{ true }}">
+                          <span style="font-size:15px;font-weight:500;color:#14232e">{{ field.value }}</span>
+                        </sc-if>
+                        <sc-if value="{{ field.showInput }}" hint-placeholder-val="{{ false }}">
+                          <input value="{{ field.inputValue }}" onChange="{{ field.onChange }}" onFocus="{{ field.focus }}" placeholder="{{ field.placeholder }}" style="{{ field.inputStyle }}">
+                        </sc-if>
+                      </div>
+                      <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-end;gap:5px;min-width:132px">
+                        <span style="{{ field.chipStyle }}"><span style="font-size:11px;line-height:1">{{ field.chipIcon }}</span>{{ field.chipLabel }}</span>
+                        <sc-if value="{{ field.showConf }}" hint-placeholder-val="{{ true }}">
+                          <span style="font-size:11px;color:#9aa7b0;font-family:'IBM Plex Mono',monospace">{{ field.confText }}</span>
+                        </sc-if>
+                        <sc-if value="{{ field.showNote }}" hint-placeholder-val="{{ false }}">
+                          <span style="font-size:10.5px;color:#cf3b3b;text-align:right;line-height:1.3;max-width:150px">{{ field.note }}</span>
+                        </sc-if>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-for>
+            <div style="height:4px"></div>
+          </div>
+        </div>
+
+        <!-- bottom bar -->
+        <div style="flex:0 0 auto;display:flex;align-items:center;gap:20px;padding:14px 26px;background:#fff;border-top:1px solid #dce4ea;box-shadow:0 -3px 16px rgba(20,35,46,.05)">
+          <div style="display:flex;align-items:center;gap:22px">
+            <div>
+              <div style="font-size:19px;font-weight:700;line-height:1">{{ totalMeds }}</div>
+              <div style="font-size:11.5px;color:#8a99a3">medicamentos · medications</div>
+            </div>
+            <div style="width:1px;height:34px;background:#e4eaee"></div>
+            <div>
+              <div style="{{ reviewCountStyle }}">{{ reviewCount }}</div>
+              <div style="font-size:11.5px;color:#8a99a3">campos por revisar · fields to review</div>
+            </div>
+          </div>
+          <sc-if value="{{ hasAbstentions }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 13px;border-radius:9px;background:#fbe8e8;border:1px solid #f0cccc">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#cf3b3b" stroke-width="1.8"/><path d="M6 6l12 12" stroke="#cf3b3b" stroke-width="1.8"/></svg>
+              <span style="font-size:12.5px;font-weight:600;color:#a33">{{ abstentionText }}</span>
+            </div>
+          </sc-if>
+          <div style="flex:1"></div>
+          <button onClick="{{ reject }}" style="padding:12px 20px;border-radius:10px;border:1.5px solid #e0c4c4;background:#fff;color:#cf3b3b;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit" style-hover="background:#fbf3f3">Rechazar · Reject</button>
+          <button onClick="{{ confirm }}" style="{{ confirmStyle }}">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M5 12l4.5 4.5L19 7" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            {{ confirmLabel }}
+          </button>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ══ DONE ══ -->
+    <sc-if value="{{ isDone }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:32px">
+        <div style="width:480px;max-width:100%;text-align:center">
+          <div style="{{ resultIconStyle }};animation:gsr-pop .45s both">
+            <sc-if value="{{ confirmed }}" hint-placeholder-val="{{ true }}">
+              <svg width="42" height="42" viewBox="0 0 24 24" fill="none"><path d="M5 12l4.5 4.5L19 7" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </sc-if>
+            <sc-if value="{{ rejected }}" hint-placeholder-val="{{ false }}">
+              <svg width="38" height="38" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>
+            </sc-if>
+          </div>
+          <div style="font-size:24px;font-weight:700;margin-top:22px">{{ resultTitleEs }}</div>
+          <div style="font-size:15px;color:#5f6f7a;margin-top:3px">{{ resultTitleEn }}</div>
+          <div style="font-size:13.5px;color:#8a99a3;margin-top:14px;line-height:1.5">{{ resultSub }}</div>
+          <div style="margin-top:26px;display:flex;flex-direction:column;gap:9px;text-align:left">
+            <sc-for list="{{ meds }}" as="med" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;gap:11px;padding:12px 15px;background:#fff;border:1px solid #dce4ea;border-radius:11px">
+                <span style="{{ med.verdict.dotStyle }}">{{ med.verdict.symbol }}</span>
+                <span style="font-weight:600;font-size:14.5px;flex:1">{{ med.name }}</span>
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:#5f6f7a">{{ med.doseSummary }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <button onClick="{{ reset }}" style="margin-top:26px;padding:13px 24px;border-radius:11px;border:none;background:#0d6d8a;color:#fff;font-size:14.5px;font-weight:600;cursor:pointer;font-family:inherit" style-hover="background:#084d5c">Nueva receta · New prescription</button>
+        </div>
+      </div>
+    </sc-if>
+
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:820},&quot;language&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;both&quot;,&quot;es&quot;,&quot;en&quot;],&quot;default&quot;:&quot;es&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Content&quot;},&quot;showConfidence&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;gateOnUncertain&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Behavior&quot;}}">
+class Component extends DCLogic {
+  state = { screen: 'upload', focused: null, result: null, meds: this.initialMeds() };
+
+  initialMeds() {
+    const F = (key, value, confidence, status, bbox, hand) => ({ key, value: value ?? '', confidence, status, edited: false, bbox, hand: hand ?? (value ?? '') });
+    return [
+      { drugRaw: 'Amoxicilina', verdict: { status: 'verified', catalog_id: 'cima-123456', match_score: 0.94 }, fields: [
+        F('drug', 'Amoxicilina', 0.92, 'readable', {x:6,y:24,w:40,h:8}, 'Amoxicilina'),
+        F('dose', '500 mg', 0.85, 'readable', {x:50,y:24,w:22,h:8}, '500mg'),
+        F('frequency', 'cada 8 h', 0.79, 'readable', {x:6,y:33,w:26,h:7}, 'c/8h'),
+        F('duration', '7 días', 0.58, 'uncertain', {x:36,y:33,w:22,h:7}, '7 días'),
+        F('route', 'oral', 0.90, 'readable', {x:62,y:33,w:16,h:7}, 'V.O.'),
+      ]},
+      { drugRaw: 'Ibuprofeno', verdict: { status: 'uncertain', catalog_id: 'cima-789012', match_score: 0.81 }, fields: [
+        F('drug', 'Ibuprofeno', 0.88, 'readable', {x:6,y:48,w:40,h:8}, 'Ibuprofeno'),
+        F('dose', null, 0.12, 'unreadable', {x:50,y:48,w:22,h:8}, ''),
+        F('frequency', 'cada 12 h', 0.55, 'uncertain', {x:6,y:57,w:26,h:7}, 'c/12h'),
+        F('duration', '5 días', 0.80, 'readable', {x:36,y:57,w:22,h:7}, '5 días'),
+        F('route', 'oral', 0.85, 'readable', {x:62,y:57,w:16,h:7}, 'V.O.'),
+      ]},
+      { drugRaw: 'Metamizol', verdict: { status: 'no_encontrado', catalog_id: null, match_score: 0.38 }, fields: [
+        F('drug', 'Metamizol', 0.54, 'uncertain', {x:6,y:72,w:40,h:8}, 'Metamizol'),
+        F('dose', '575 mg', 0.70, 'readable', {x:50,y:72,w:22,h:8}, '575mg'),
+        F('frequency', null, 0.09, 'unreadable', {x:6,y:81,w:26,h:7}, ''),
+        F('duration', '3 días', 0.66, 'readable', {x:36,y:81,w:22,h:7}, '3 días'),
+        F('route', 'oral', 0.80, 'readable', {x:62,y:81,w:16,h:7}, 'V.O.'),
+      ]},
+    ];
+  }
+
+  C = { ink:'#14232e', muted:'#5f6f7a', green:'#1f9d57', greenBg:'#e7f6ed', greenBd:'#bfe6cd', amber:'#b9770a', amberBg:'#fbf0d8', amberBd:'#ecdcbf', red:'#cf3b3b', redBg:'#fbe8e8', redBd:'#f0cccc', brand:'#0d6d8a' };
+  FIELD_LABELS = { drug:['Medicamento','Drug'], dose:['Dosis','Dose'], frequency:['Frecuencia','Frequency'], duration:['Duración','Duration'], route:['Vía','Route'] };
+  VERDICTS = {
+    verified:{ symbol:'✓', es:'Verificado', en:'Verified', c:'green' },
+    uncertain:{ symbol:'⚠', es:'Revisar dosis', en:'Check dose', c:'amber' },
+    no_encontrado:{ symbol:'✗', es:'No encontrado', en:'Not found', c:'red' },
+  };
+
+  t(es, en) {
+    const l = this.props.language ?? 'both';
+    return l === 'es' ? es : l === 'en' ? en : es + ' · ' + en;
+  }
+  setFocus(id) { this.setState({ focused: id }); }
+  onFieldInput(mi, fkey, val) {
+    this.setState(s => ({ meds: s.meds.map((m,i) => i !== mi ? m : { ...m, fields: m.fields.map(f => f.key !== fkey ? f : { ...f, value: val, edited: true }) }) }));
+  }
+  start() { this.setState({ screen: 'processing' }); clearTimeout(this._t); this._t = setTimeout(() => this.setState({ screen: 'review' }), 2400); }
+  reset() { clearTimeout(this._t); this.setState({ screen: 'upload', focused: null, result: null, meds: this.initialMeds() }); }
+  componentWillUnmount() { clearTimeout(this._t); }
+
+  renderVals() {
+    const C = this.C, s = this.state;
+    const clearFocus = () => this.setFocus(null);
+
+    // per-field derived state
+    const fieldState = (f) => {
+      const hasVal = f.value != null && String(f.value).trim() !== '';
+      if (f.status === 'unreadable') {
+        if (hasVal) return { bucket:'resolved', color:C.green, bg:C.greenBg, bd:C.greenBd, icon:'✓', lbl:this.t('Completado','Filled in') };
+        return { bucket:'abstention', color:C.red, bg:C.redBg, bd:C.redBd, icon:'⊘', lbl:this.t('Abstención','Abstention') };
+      }
+      if (f.status === 'uncertain') {
+        if (f.edited) return { bucket:'corrected', color:C.green, bg:C.greenBg, bd:C.greenBd, icon:'✓', lbl:this.t('Corregido','Corrected') };
+        return { bucket:'uncertain', color:C.amber, bg:C.amberBg, bd:C.amberBd, icon:'▲', lbl:this.t('Dudoso','Uncertain') };
+      }
+      return { bucket:'readable', color:C.green, bg:C.greenBg, bd:C.greenBd, icon:'●', lbl:this.t('Legible','Readable') };
+    };
+
+    let abstentionsRemaining = 0, uncertainRemaining = 0;
+    s.meds.forEach(m => m.fields.forEach(f => {
+      const st = fieldState(f);
+      if (st.bucket === 'abstention') abstentionsRemaining++;
+      if (st.bucket === 'uncertain') uncertainRemaining++;
+    }));
+    const reviewCount = abstentionsRemaining + uncertainRemaining;
+    const gateUncertain = !!this.props.gateOnUncertain;
+    const canConfirm = abstentionsRemaining === 0 && (!gateUncertain || uncertainRemaining === 0);
+    const showConfidence = this.props.showConfidence !== false;
+
+    // meds view
+    const meds = s.meds.map((m, mi) => {
+      const v = this.VERDICTS[m.verdict.status];
+      const vc = { green:[C.green,C.greenBg,C.greenBd], amber:[C.amber,C.amberBg,C.amberBd], red:[C.red,C.redBg,C.redBd] }[v.c];
+      const drugF = m.fields.find(f => f.key === 'drug');
+      const drugUnread = drugF.status === 'unreadable' && !String(drugF.value).trim();
+      const name = drugUnread ? this.t('No legible','Not legible') : (drugF.value || m.drugRaw);
+      const doseF = m.fields.find(f => f.key === 'dose');
+      const matchPct = Math.round(m.verdict.match_score * 100);
+      const catalogLine = m.verdict.status === 'no_encontrado'
+        ? this.t('Sin coincidencia en catálogo','No catalog match')
+        : 'CIMA ' + m.verdict.catalog_id + ' · ' + this.t(matchPct + '% coincidencia', matchPct + '% match');
+
+      const fields = m.fields.map(f => {
+        const st = fieldState(f);
+        const [le, len] = this.FIELD_LABELS[f.key];
+        const focused = s.focused === (mi + '-' + f.key);
+        const editable = f.status === 'uncertain' || f.status === 'unreadable';
+        const isAbst = st.bucket === 'abstention';
+        const rowStyle = `display:flex;gap:14px;align-items:flex-start;padding:13px 18px;border-top:1px solid #f1f4f6;transition:background .12s;background:${focused ? '#eef7f9' : (isAbst ? '#fdf4f4' : 'transparent')}`;
+        const chipStyle = `display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:600;color:${st.color};background:${st.bg};border:1px solid ${st.bd};white-space:nowrap`;
+        const inputStyle = `width:100%;max-width:220px;padding:8px 11px;border-radius:8px;font-size:14px;color:${C.ink};outline:none;background:#fff;` +
+          (isAbst ? `border:1.5px dashed ${C.red};box-shadow:0 0 0 3px ${C.redBg}` : (st.bucket === 'corrected' || st.bucket === 'resolved') ? `border:1.5px solid ${C.greenBd}` : `border:1.5px solid ${C.amberBd};background:#fffdf7`);
+        return {
+          labelEs: this.props.language === 'en' ? len : le,
+          labelEn: (this.props.language ?? 'both') === 'both' ? len : '',
+          value: f.value,
+          showValue: !editable,
+          showInput: editable,
+          inputValue: f.value || '',
+          placeholder: isAbst ? this.t('Complete el valor','Enter value') : this.t('Corrija si procede','Correct if needed'),
+          inputStyle,
+          rowStyle,
+          chipStyle, chipIcon: st.icon, chipLabel: st.lbl,
+          showConf: showConfidence && st.bucket !== 'abstention',
+          confText: 'conf ' + Math.round(f.confidence * 100) + '%',
+          showNote: isAbst,
+          note: this.t('El sistema no adivinó','System did not guess'),
+          focus: () => this.setFocus(mi + '-' + f.key),
+          onChange: (e) => this.onFieldInput(mi, f.key, e.target.value),
+        };
+      });
+
+      return {
+        indexLabel: String(mi + 1),
+        name,
+        nameStyle: `font-size:17px;font-weight:700;${drugUnread ? 'color:'+C.red : ''}`,
+        catalogLine,
+        doseSummary: (doseF.value || '—'),
+        verdict: {
+          symbol: v.symbol,
+          label: this.t(v.es, v.en),
+          badgeStyle: `display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;font-size:12.5px;font-weight:600;color:${vc[0]};background:${vc[1]};border:1px solid ${vc[2]};white-space:nowrap;flex:0 0 auto`,
+          dotStyle: `width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;background:${vc[0]};flex:0 0 auto`,
+        },
+        fields,
+      };
+    });
+
+    // bounding boxes
+    const boxes = [];
+    s.meds.forEach((m, mi) => m.fields.forEach(f => {
+      const id = mi + '-' + f.key;
+      const focused = s.focused === id;
+      const scribble = f.status === 'unreadable';
+      const clr = f.status === 'unreadable' ? C.red : f.status === 'uncertain' ? C.amber : C.green;
+      const bgTint = f.status === 'unreadable' ? C.redBg : 'transparent';
+      const b = f.bbox;
+      const style = `position:absolute;left:${b.x}%;top:${b.y}%;width:${b.w}%;height:${b.h}%;` +
+        `border-radius:7px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;transition:.14s;cursor:default;overflow:hidden;` +
+        (scribble ? `border:2px dashed ${C.red};` : `border:${focused ? '2.5px' : '1.5px'} solid ${clr};`) +
+        `background:${focused ? this.C.brand + '22' : bgTint};` +
+        (focused ? `box-shadow:0 0 0 3px ${this.C.brand}33;` : '') +
+        (focused && !scribble ? `border-color:${this.C.brand};` : '');
+      boxes.push({ style, scribble, legible: !scribble, hand: f.hand, handStyle: `font-family:'Caveat',cursive;font-size:21px;color:#26404e;transform:rotate(-2deg);white-space:nowrap`, focus: () => this.setFocus(id) });
+    }));
+
+    const overallPct = 74;
+    const confirmStyle = `display:inline-flex;align-items:center;gap:9px;padding:12px 22px;border-radius:10px;border:none;font-size:14px;font-weight:700;font-family:inherit;transition:.15s;` +
+      (canConfirm ? `background:${C.green};color:#fff;cursor:pointer` : `background:#e4eaee;color:#a3b0b8;cursor:not-allowed`);
+
+    const result = s.result;
+    const confirmed = result === 'confirmed', rejected = result === 'rejected';
+
+    return {
+      isUpload: s.screen === 'upload',
+      isProcessing: s.screen === 'processing',
+      isReview: s.screen === 'review',
+      isDone: s.screen === 'done',
+      prescriptionId: 'a3f9c2b1d4e8f7a0',
+      needsReview: reviewCount > 0,
+      overallText: overallPct + '%',
+      overallBarStyle: `height:100%;width:${overallPct}%;background:${C.amber};border-radius:4px`,
+      meds, boxes, clearFocus,
+      totalMeds: s.meds.length,
+      reviewCount,
+      reviewCountStyle: `font-size:19px;font-weight:700;line-height:1;color:${reviewCount > 0 ? C.amber : C.green}`,
+      hasAbstentions: abstentionsRemaining > 0,
+      abstentionText: this.t(abstentionsRemaining + ' abstención(es) sin resolver', abstentionsRemaining + ' unresolved abstention(s)'),
+      confirmStyle,
+      confirmLabel: canConfirm ? this.t('Confirmar receta','Confirm prescription') : this.t('Resuelva ' + abstentionsRemaining + ' abstención(es)', 'Resolve ' + abstentionsRemaining + ' abstention(s)'),
+      confirm: () => { if (canConfirm) this.setState({ screen: 'done', result: 'confirmed' }); },
+      reject: () => this.setState({ screen: 'done', result: 'rejected' }),
+      useSample: () => this.start(),
+      onFile: () => this.start(),
+      reset: () => this.reset(),
+      confirmed, rejected,
+      resultIconStyle: `width:76px;height:76px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:${confirmed ? C.green : C.red}`,
+      resultTitleEs: confirmed ? 'Receta aceptada' : 'Receta rechazada',
+      resultTitleEn: confirmed ? 'Prescription accepted' : 'Prescription rejected',
+      resultSub: confirmed
+        ? this.t('Todos los campos fueron confirmados por el revisor. El registro verificado se ha guardado.', 'All fields were confirmed by the reviewer. The verified record has been saved.')
+        : this.t('La receta fue marcada como no válida y no se dispensará.', 'The prescription was flagged as invalid and will not be dispensed.'),
+    };
+  }
+}
+</script>
+</body>
+</html>

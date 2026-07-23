@@ -51,6 +51,10 @@ db.env
 data/synthetic/*.jsonl
 data/golden_set/
 !data/golden_set/.gitkeep
+data/*.jpg
+data/*.jpeg
+data/*.png
+data/*.webp
 
 # MLX / fine-tuning
 runs/

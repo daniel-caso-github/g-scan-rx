@@ -17,7 +17,7 @@ class InjectionGuardrail(Guardrail):
         self._scanner = PromptInjection()
 
     async def check(self, text: str) -> GuardrailResult:
-        _sanitized, is_valid, risk_score = self._scanner.scan(prompt="", output=text)
+        _sanitized, is_valid, risk_score = self._scanner.scan(prompt=text)
         if not is_valid:
             logger.warning("Prompt injection detectado, risk_score=%.3f", risk_score)
             return GuardrailResult(passed=False, risk_type="PROMPT_INJECTION")
