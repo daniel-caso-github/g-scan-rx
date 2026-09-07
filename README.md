@@ -18,21 +18,6 @@ Agentic assistant that digitizes and **verifies** handwritten medical prescripti
 
 ---
 
-## Demo
-
-> 🎥 **TODO**: record a short screen capture (GIF or video) of the full local flow and embed it here.
-> This project deliberately doesn't run a public deployment (see the ADR on that decision) — a local
-> recording is the substitute for an interactive demo. Suggested checklist for the capture:
->
-> - [ ] `POST /extract` on a synthetic prescription image → show the per-field confidence output.
-> - [ ] `POST /verify` (or the full `/process` agent flow) → show at least one field abstaining
->   (`status: "unreadable"`) and one drug matched against the catalog.
-> - [ ] The human confirmation step (frontend) — field-by-field, next to the original image crop.
-> - [ ] `GET /dashboard` with some traffic already generated, showing non-zero hallucination/
->   abstention/cost/latency figures.
-
----
-
 ## Architecture
 
 ```
