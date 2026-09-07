@@ -69,3 +69,8 @@ adapters/
 # Claude Code — configuración local y guías de agente (no subir al repo)
 .claude/
 CLAUDE.md
+.mcp.json
+
+# Playwright (agente visual-reviewer)
+.playwright-mcp/
+tmp/visual-review/

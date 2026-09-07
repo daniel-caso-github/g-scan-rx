@@ -19,7 +19,7 @@ export function Header() {
         </div>
         <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.05 }}>
           <span style={{ fontWeight: 700, fontSize: 17, letterSpacing: ".2px" }}>G-Scan-RX</span>
-          <span style={{ fontSize: 11, color: C.dim, fontWeight: 500 }}>Rx digitization & verification</span>
+          <span style={{ fontSize: 12.5, color: C.dim, fontWeight: 500 }}>Rx digitization & verification</span>
         </div>
       </div>
       <div style={{ flex: 1 }} />

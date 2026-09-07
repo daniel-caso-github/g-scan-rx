@@ -34,12 +34,12 @@ export function ReviewPage({
   return (
     <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column" }}>
       {/* sub-header */}
-      <div style={{
+      <div className="gsr-review-subheader" style={{
         flex: "0 0 auto", display: "flex", alignItems: "center", gap: 20,
         padding: "14px 26px", background: C.white, borderBottom: `1px solid ${C.border}`,
       }}>
         <div>
-          <div style={{ fontSize: 17, fontWeight: 700 }}>Revisión de receta · Prescription review</div>
+          <h1 style={{ margin: 0, fontSize: 17, fontWeight: 700 }}>Revisión de receta · Prescription review</h1>
           <div style={{ fontSize: 12.5, color: C.dim, fontFamily: MONO }}>ID {prescriptionId}</div>
         </div>
         <div style={{ flex: 1 }} />
@@ -57,10 +57,10 @@ export function ReviewPage({
             </span>
           </div>
         )}
-        <div style={{ display: "flex", alignItems: "center", gap: 11, minWidth: 210 }}>
+        <div className="gsr-review-confidence" style={{ display: "flex", alignItems: "center", gap: 11, minWidth: 210 }}>
           <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: 11, color: C.dim, fontWeight: 500, textTransform: "uppercase", letterSpacing: ".5px" }}>Confianza global</div>
-            <div style={{ fontSize: 11, color: C.dim, fontWeight: 500, marginTop: -1 }}>Overall confidence</div>
+            <div style={{ fontSize: 12.5, color: C.dim, fontWeight: 500, textTransform: "uppercase", letterSpacing: ".5px" }}>Confianza global</div>
+            <div style={{ fontSize: 12.5, color: C.dim, fontWeight: 500, marginTop: -1 }}>Overall confidence</div>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 4, width: 110 }}>
             <div style={{ fontFamily: MONO, fontWeight: 600, fontSize: 15, textAlign: "right", color: barColor }}>
@@ -74,7 +74,7 @@ export function ReviewPage({
       </div>
 
       {/* body */}
-      <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+      <div className="gsr-review-body" style={{ flex: 1, display: "flex", overflow: "hidden" }}>
         <PrescriptionImage
           meds={meds}
           focused={focused}
@@ -100,7 +100,7 @@ export function ReviewPage({
       </div>
 
       {/* bottom bar */}
-      <div style={{
+      <div className="gsr-review-bottombar" style={{
         flex: "0 0 auto", display: "flex", alignItems: "center", gap: 20,
         padding: "14px 26px", background: C.white, borderTop: `1px solid ${C.border}`,
         boxShadow: "0 -3px 16px rgba(20,35,46,.05)",
@@ -108,14 +108,14 @@ export function ReviewPage({
         <div style={{ display: "flex", alignItems: "center", gap: 22 }}>
           <div>
             <div style={{ fontSize: 19, fontWeight: 700, lineHeight: 1 }}>{meds.length}</div>
-            <div style={{ fontSize: 11.5, color: C.dim }}>medicamentos · medications</div>
+            <div style={{ fontSize: 12.5, color: C.dim }}>medicamentos · medications</div>
           </div>
           <div style={{ width: 1, height: 34, background: "#e4eaee" }} />
           <div>
             <div style={{ fontSize: 19, fontWeight: 700, lineHeight: 1, color: reviewCount > 0 ? C.amber : C.green }}>
               {reviewCount}
             </div>
-            <div style={{ fontSize: 11.5, color: C.dim }}>campos por revisar · fields to review</div>
+            <div style={{ fontSize: 12.5, color: C.dim }}>campos por revisar · fields to review</div>
           </div>
         </div>
 

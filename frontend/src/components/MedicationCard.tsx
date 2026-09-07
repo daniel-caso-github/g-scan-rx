@@ -103,7 +103,7 @@ export function MedicationCard({ med, index, focused, onFocus, onFieldChange }: 
             >
               <div style={{ flex: "0 0 118px", paddingTop: 2 }}>
                 <div style={{ fontSize: 13.5, fontWeight: 600 }}>{le}</div>
-                <div style={{ fontSize: 11.5, color: "#9aa7b0", marginTop: -1 }}>{len}</div>
+                <div style={{ fontSize: 12.5, color: C.dim, marginTop: -1 }}>{len}</div>
               </div>
 
               <div style={{ flex: 1, minWidth: 0 }}>
@@ -136,15 +136,15 @@ export function MedicationCard({ med, index, focused, onFocus, onFieldChange }: 
               }}>
                 <span style={{
                   display: "inline-flex", alignItems: "center", gap: 5,
-                  padding: "3px 9px", borderRadius: 999, fontSize: 11, fontWeight: 600,
+                  padding: "3px 9px", borderRadius: 999, fontSize: 12.5, fontWeight: 600,
                   color: chip.color, background: chip.bg, border: `1px solid ${chip.bd}`,
                   whiteSpace: "nowrap",
                 }}>
-                  <span style={{ fontSize: 11, lineHeight: 1 }}>{chip.icon}</span>
+                  <span style={{ fontSize: 12.5, lineHeight: 1 }}>{chip.icon}</span>
                   {chip.es} · {chip.en}
                 </span>
                 {bucket !== "abstention" && (
-                  <span style={{ fontSize: 11, color: "#9aa7b0", fontFamily: MONO }}>
+                  <span style={{ fontSize: 12.5, color: C.dim, fontFamily: MONO }}>
                     conf {Math.round(f.confidence * 100)}%
                   </span>
                 )}

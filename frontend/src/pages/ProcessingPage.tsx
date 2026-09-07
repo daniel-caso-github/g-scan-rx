@@ -1,4 +1,10 @@
+import type { CSSProperties } from "react";
 import { C, HAND } from "../styles/tokens";
+
+const srOnly: CSSProperties = {
+  position: "absolute", width: 1, height: 1, padding: 0, margin: -1,
+  overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", border: 0,
+};
 
 export function ProcessingPage() {
   return (
@@ -6,6 +12,7 @@ export function ProcessingPage() {
       position: "absolute", inset: 0, display: "flex", flexDirection: "column",
       alignItems: "center", justifyContent: "center", gap: 34, padding: 32,
     }}>
+      <h1 style={srOnly}>Procesando receta · Processing prescription</h1>
       <div style={{
         position: "relative", width: 190, height: 250,
         background: C.white, borderRadius: 10,

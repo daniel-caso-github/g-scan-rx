@@ -8,6 +8,7 @@ from src.application.use_cases.verify_medication import VerifyMedicationUseCase
 from src.domain.entities.prescription import Prescription
 from src.domain.ports.anomaly_detector import AnomalyDetector
 from src.domain.ports.retriever import Retriever
+from src.infrastructure.observability.metrics import record_verdicts
 
 logger = logging.getLogger(__name__)
 
@@ -55,6 +56,7 @@ def build_mcp_server(
         """
         prescription = Prescription.model_validate(prescription_data)
         record = await verify_uc.execute(prescription)
+        record_verdicts(record)
         return record.model_dump()
 
     if anomaly_detector is not None:

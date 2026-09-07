@@ -2,6 +2,7 @@ import base64
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+from prometheus_client import REGISTRY
 from pydantic import ValidationError
 
 from src.domain.entities.catalog_item import CatalogItem
@@ -142,6 +143,16 @@ async def test_verify_prescription_returns_verified_record():
     assert result["prescription_id"] == "rx-001"
     assert result["needs_review"] is False
     assert len(result["medications"]) == 1
+
+
+async def test_verify_prescription_records_verdict_metric():
+    before = REGISTRY.get_sample_value("gscan_verdicts_total", {"status": "verified"}) or 0.0
+    extract_uc, verify_uc, retriever = _make_mocks()
+    server = build_mcp_server(extract_uc, verify_uc, retriever)
+    tool = await server.get_tool("verify_prescription")
+    await tool.fn(prescription_data=_prescription().model_dump())
+    after = REGISTRY.get_sample_value("gscan_verdicts_total", {"status": "verified"}) or 0.0
+    assert after == before + 1
 
 
 async def test_verify_prescription_validates_prescription_model():

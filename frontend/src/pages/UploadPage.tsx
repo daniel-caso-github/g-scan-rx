@@ -17,9 +17,9 @@ export function UploadPage({ onFile, onSample, error }: Props) {
     }}>
       <div style={{ width: 560, maxWidth: "100%" }}>
         <div style={{ textAlign: "center", marginBottom: 26 }}>
-          <div style={{ fontSize: 26, fontWeight: 700, letterSpacing: "-.3px" }}>
+          <h1 style={{ margin: 0, fontSize: 26, fontWeight: 700, letterSpacing: "-.3px" }}>
             Digitalizar receta manuscrita
-          </div>
+          </h1>
           <div style={{ fontSize: 15, color: C.muted, marginTop: 5 }}>
             Digitize a handwritten prescription
           </div>

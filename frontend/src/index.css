@@ -28,3 +28,40 @@ input { font-family: inherit; }
   border-radius: 8px;
   border: 2px solid #eaeef2;
 }
+
+/* Review screen: stack image + medication list instead of a fixed 42%/58%
+   side-by-side split, which clips card content below ~1024px. */
+@media (max-width: 767px) {
+  .gsr-review-subheader {
+    flex-wrap: wrap;
+    row-gap: 10px;
+    padding: 12px 16px !important;
+  }
+  .gsr-review-subheader > div:first-child {
+    flex: 1 1 100%;
+  }
+  .gsr-review-confidence {
+    min-width: 0 !important;
+  }
+  .gsr-review-body {
+    flex-direction: column !important;
+  }
+  .gsr-review-image {
+    /* Fixed (not auto) height: the inner image row uses flex:1 + height:100%,
+       which needs a definite ancestor height to resolve against — flex: 0 0
+       auto collapses those to 0. */
+    flex: 0 0 38vh !important;
+    width: 100%;
+    padding: 14px 16px !important;
+    border-right: none !important;
+    border-bottom: 1px solid #dce4ea;
+  }
+  .gsr-review-bottombar {
+    flex-wrap: wrap;
+    row-gap: 10px;
+    padding: 12px 16px !important;
+  }
+  .gsr-review-bottombar button {
+    flex: 1 1 auto;
+  }
+}
