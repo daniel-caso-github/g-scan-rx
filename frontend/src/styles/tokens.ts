@@ -1,7 +1,10 @@
 export const C = {
   ink:     "#14232e",
-  muted:   "#5f6f7a",
-  dim:     "#8a99a3",
+  // muted/dim darkened to clear WCAG AA (4.5:1) against both `white` and `bg`
+  // — the originals failed 4.46:1 and 2.9:1 respectively (verified live via
+  // impeccable detect, /impeccable harden fix).
+  muted:   "#5a6973",
+  dim:     "#606c75",
   brand:   "#0d6d8a",
   brandDk: "#084d5c",
   brandBg: "#eef7f9",

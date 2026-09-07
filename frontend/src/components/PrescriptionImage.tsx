@@ -26,7 +26,7 @@ function ZoomIcon() {
 }
 
 const btnStyle: React.CSSProperties = {
-  width: 32, height: 32, borderRadius: 7,
+  width: 44, height: 44, borderRadius: 7,
   background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.2)",
   color: "#fff", cursor: "pointer", fontSize: 18,
   display: "flex", alignItems: "center", justifyContent: "center",
@@ -82,7 +82,7 @@ export function PrescriptionImage({ meds, focused, onFocus, imageUrl }: Props) {
 
   return (
     <>
-      <div style={{
+      <div className="gsr-review-image" style={{
         flex: "0 0 42%", display: "flex", flexDirection: "column",
         padding: "20px 22px", borderRight: `1px solid ${C.border}`,
         background: "#f2f5f7", overflow: "hidden",
@@ -91,7 +91,7 @@ export function PrescriptionImage({ meds, focused, onFocus, imageUrl }: Props) {
           <div style={{ fontSize: 13, fontWeight: 600, color: C.muted }}>
             Imagen original · Original image
           </div>
-          <div style={{ fontSize: 11.5, color: "#9aa7b0" }}>
+          <div style={{ fontSize: 12.5, color: C.dim }}>
             Pase el cursor sobre un campo · Hover a field
           </div>
         </div>
@@ -171,7 +171,7 @@ export function PrescriptionImage({ meds, focused, onFocus, imageUrl }: Props) {
               title="Ver imagen completa"
               style={{
                 position: "absolute", bottom: 10, right: 10,
-                width: 34, height: 34, borderRadius: 8,
+                width: 44, height: 44, borderRadius: 8,
                 background: "rgba(255,255,255,0.92)",
                 border: `1px solid ${C.border}`,
                 boxShadow: "0 2px 8px rgba(20,35,46,.15)",
@@ -193,7 +193,7 @@ export function PrescriptionImage({ meds, focused, onFocus, imageUrl }: Props) {
             { bg: C.amberBg, bd: C.amberBd, dashed: false, label: "Dudoso · Uncertain" },
             { bg: C.redBg,   bd: C.redBd,   dashed: true,  label: "No legible · Abstention" },
           ].map(({ bg, bd, dashed, label }) => (
-            <div key={label} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11.5, color: C.muted }}>
+            <div key={label} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, color: C.muted }}>
               <span style={{
                 width: 11, height: 11, borderRadius: 3,
                 border: `1.5px ${dashed ? "dashed" : "solid"} ${bd}`,
@@ -257,7 +257,7 @@ export function PrescriptionImage({ meds, focused, onFocus, imageUrl }: Props) {
               title="Cerrar (Esc)"
               style={{
                 position: "absolute", top: 10, right: 10,
-                width: 34, height: 34, borderRadius: 8,
+                width: 44, height: 44, borderRadius: 8,
                 background: "rgba(0,0,0,0.55)", border: "1px solid rgba(255,255,255,0.2)",
                 color: "#fff", cursor: "pointer", fontSize: 20, lineHeight: 1,
                 display: "flex", alignItems: "center", justifyContent: "center",
@@ -283,10 +283,10 @@ export function PrescriptionImage({ meds, focused, onFocus, imageUrl }: Props) {
             </span>
             <button onClick={() => changeZoom(ZOOM_STEP)} style={btnStyle}>+</button>
             <div style={{ width: 1, height: 18, background: "rgba(255,255,255,0.25)", margin: "0 4px" }} />
-            <button onClick={() => setZoomLevel(1)} style={{ ...btnStyle, fontSize: 11, padding: "4px 10px" }}>1:1</button>
+            <button onClick={() => setZoomLevel(1)} style={{ ...btnStyle, fontSize: 12.5, padding: "4px 10px" }}>1:1</button>
           </div>
 
-          <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 11, marginTop: 8 }}>
+          <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 12.5, marginTop: 8 }}>
             Rueda del mouse para zoom · Scroll para desplazar
           </div>
         </div>

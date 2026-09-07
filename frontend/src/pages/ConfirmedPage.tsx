@@ -39,9 +39,9 @@ export function ConfirmedPage({ result, meds, onReset }: Props) {
           )}
         </div>
 
-        <div style={{ fontSize: 24, fontWeight: 700, marginTop: 22 }}>
+        <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700, marginTop: 22 }}>
           {confirmed ? "Receta aceptada" : "Receta rechazada"}
-        </div>
+        </h1>
         <div style={{ fontSize: 15, color: C.muted, marginTop: 3 }}>
           {confirmed ? "Prescription accepted" : "Prescription rejected"}
         </div>
