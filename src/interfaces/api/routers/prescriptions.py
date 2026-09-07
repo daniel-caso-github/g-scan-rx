@@ -15,10 +15,12 @@ from src.domain.entities.verified_record import VerifiedRecord
 from src.domain.ports.guardrail import Guardrail
 from src.domain.ports.image_cache import ImageCache
 from src.domain.ports.tracer import Tracer
+from src.infrastructure.observability.dashboard import render_dashboard_html
 from src.infrastructure.observability.metrics import (
     ABSTENTIONS_TOTAL,
     CACHE_HITS_TOTAL,
     EXTRACTIONS_TOTAL,
+    record_verdicts,
 )
 from src.interfaces.api.dependencies import (
     get_extract_uc,
@@ -52,6 +54,11 @@ async def health(request: Request) -> HealthResponse:
 @router.get("/metrics", include_in_schema=False)
 async def metrics() -> Response:
     return Response(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)
+
+
+@router.get("/dashboard", include_in_schema=False)
+async def dashboard() -> Response:
+    return Response(content=render_dashboard_html(), media_type="text/html")
 
 
 @router.post("/extract", response_model=ApiResponse[Prescription])
@@ -115,6 +122,7 @@ async def verify(
 ) -> ApiResponse[VerifiedRecord]:
     try:
         record = await use_case.execute(prescription)
+        record_verdicts(record)
         return ApiResponse.ok(record)
     except Exception:
         logger.exception("Error en /verify")

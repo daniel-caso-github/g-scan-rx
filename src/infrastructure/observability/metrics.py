@@ -1,5 +1,7 @@
 from prometheus_client import Counter
 
+from src.domain.entities.verified_record import VerifiedRecord
+
 ABSTENTIONS_TOTAL = Counter(
     "gscan_abstentions_total",
     "Agent abstentions due to out-of-distribution images",
@@ -28,3 +30,14 @@ CIRCUIT_OPEN_TOTAL = Counter(
     "Requests rejected by an open circuit breaker",
     ["service"],
 )
+VERDICT_STATUS_TOTAL = Counter(
+    "gscan_verdicts_total",
+    "Drug verification verdicts against the catalog (not_found is a hallucination proxy)",
+    ["status"],
+)
+
+
+def record_verdicts(record: VerifiedRecord) -> None:
+    """Records the drug verdict per medication; not_found is the hallucination proxy."""
+    for med in record.medications:
+        VERDICT_STATUS_TOTAL.labels(status=med.drug.verdict.status).inc()
