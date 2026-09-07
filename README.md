@@ -18,6 +18,21 @@ Agentic assistant that digitizes and **verifies** handwritten medical prescripti
 
 ---
 
+## Demo
+
+> 🎥 **TODO**: record a short screen capture (GIF or video) of the full local flow and embed it here.
+> This project deliberately doesn't run a public deployment (see the ADR on that decision) — a local
+> recording is the substitute for an interactive demo. Suggested checklist for the capture:
+>
+> - [ ] `POST /extract` on a synthetic prescription image → show the per-field confidence output.
+> - [ ] `POST /verify` (or the full `/process` agent flow) → show at least one field abstaining
+>   (`status: "unreadable"`) and one drug matched against the catalog.
+> - [ ] The human confirmation step (frontend) — field-by-field, next to the original image crop.
+> - [ ] `GET /dashboard` with some traffic already generated, showing non-zero hallucination/
+>   abstention/cost/latency figures.
+
+---
+
 ## Architecture
 
 ```
@@ -56,6 +71,18 @@ Agentic assistant that digitizes and **verifies** handwritten medical prescripti
 ```
 
 Dependencies always point inward. `domain/` imports nothing from other layers.
+
+### Frontend (`frontend/`)
+
+React + Vite SPA — the human-confirmation screen, next to the original image crop:
+
+```
+Upload → Processing → Review (field-by-field, image side-by-side) → Confirmed / Rejected
+```
+
+Every field carries its own status (legible / uncertain / abstention) and requires an explicit
+accept or correction — nothing auto-confirms. Responsive from 320px up; body text meets WCAG AA
+contrast (4.5:1).
 
 ---
 
@@ -103,11 +130,15 @@ docker compose run --rm app alembic upgrade head
 docker compose run --rm app python -m src.interfaces.cli.ingest_catalog cima
 
 # 4. Start the API
-docker compose up -d api
+docker compose up -d app
 
-# 5. Verify
+# 5. Start the frontend (the human-confirmation screen)
+docker compose up -d frontend
+
+# 6. Verify
 curl http://localhost:8000/health
 # → {"status":"ok"}
+open http://localhost:5173
 ```
 
 ---
@@ -117,7 +148,8 @@ curl http://localhost:8000/health
 | Method | Path | Description |
 |---|---|---|
 | `GET` | `/health` | Health check |
-| `GET` | `/metrics` | Prometheus metrics |
+| `GET` | `/metrics` | Prometheus metrics (raw exposition format) |
+| `GET` | `/dashboard` | Human-readable metrics dashboard (hallucination/abstention/cost/latency) |
 | `POST` | `/extract` | Extract medications from an image (rate: 10/min) |
 | `POST` | `/verify` | Verify a `Prescription` against the catalog |
 | `POST` | `/process` | Full ReAct pipeline (rate: 10/min) |
@@ -173,6 +205,27 @@ docker compose run --rm app ruff check src tests
 
 ---
 
+## Metrics dashboard
+
+`GET /dashboard` renders a self-contained HTML page with the four metrics the project's engineering
+thesis cares about most — **hallucination, abstention, cost, and latency** — computed live from the
+in-process Prometheus counters below:
+
+```bash
+docker compose up -d app
+open http://localhost:8000/dashboard   # or just curl it
+```
+
+- **Hallucination rate**: share of drug verdicts that came back `not_found` against the catalog — a
+  drug the VLM extracted that doesn't match anything real.
+- **Abstention rate**: share of `/process` attempts where the agent abstained on an out-of-distribution image.
+- **Cost / tokens**: cumulative Gemini spend and token usage.
+- **Average latency**: mean HTTP request duration across all endpoints.
+
+All figures are cumulative **since the API process started** — there's no Prometheus/Grafana server
+in this stack (deliberately; see the ADR on not deploying a public demo), so there's no time series
+or real percentiles, only an in-process average. Restarting the API resets the counters.
+
 ## Prometheus Metrics
 
 | Metric | Description |
@@ -180,6 +233,7 @@ docker compose run --rm app ruff check src tests
 | `gscan_requests_total` | HTTP requests by endpoint and status code |
 | `gscan_request_duration_seconds` | Latency by endpoint |
 | `gscan_extractions_total` | Extractions by result (success, cache_hit, error, pii_blocked, injection_blocked) |
+| `gscan_verdicts_total` | Drug verification verdicts by status (`not_found` is the hallucination proxy) |
 | `gscan_abstentions_total` | Agent abstentions (OOD image) |
 | `gscan_tokens_total` | Gemini tokens consumed by model and direction |
 | `gscan_cost_usd_total` | Estimated cost in USD by model |
